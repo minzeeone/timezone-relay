@@ -1,0 +1,16 @@
+{
+  "name": "timezone-relay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "타임존 릴레이 AI — 하루 작업을 마친 팀원의 로그를 다음 시간대 팀원용 인수인계 브리핑으로 자동 생성",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  }
+}

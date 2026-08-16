@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>타임존 릴레이 AI — Border 04 조직</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="brand-mark">⇄</span>
+          <div>
+            <h1>타임존 릴레이 AI</h1>
+            <p>Border 04 · 조직 — 흩어진 기록을 하나의 인수인계 브리핑으로</p>
+          </div>
+        </div>
+        <span id="mode-badge" class="badge badge-muted">연결 확인 중…</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- 입력 -->
+      <section class="card input-card">
+        <div class="card-head">
+          <h2>작업 로그 입력</h2>
+          <div class="head-actions">
+            <label class="field">
+              <span>프로젝트</span>
+              <select id="project">
+                <option value="payment">결제 개편</option>
+                <option value="search">검색 리뉴얼</option>
+                <option value="infra">인프라 이관</option>
+              </select>
+            </label>
+            <button type="button" id="sample-btn" class="btn btn-ghost">샘플 로그 넣기</button>
+            <button type="button" id="reset-btn" class="btn btn-ghost">이전 브리핑 초기화</button>
+          </div>
+        </div>
+        <p class="hint">
+          Slack · GitHub · Notion 등에서 복사한 기록을 그대로 붙여넣으세요. 툴이 섞여 있어도 됩니다.
+        </p>
+        <textarea
+          id="log-input"
+          rows="12"
+          spellcheck="false"
+          placeholder="[Slack #proj-payment 09:14 KST] 지원: 결제 모듈 리팩터링 브랜치 올렸어요&#10;[GitHub 09:20 KST] opened PR #42 &quot;refactor: payment module&quot;&#10;[Notion / 결제 개편 09:40] 결제 모듈 리팩터링 진행중"
+        ></textarea>
+        <div class="submit-row">
+          <span id="prev-info" class="prev-info"></span>
+          <button type="button" id="run-btn" class="btn btn-primary">브리핑 생성하기</button>
+        </div>
+      </section>
+
+      <!-- 상태 -->
+      <div id="status" class="status" hidden></div>
+
+      <!-- 결과 -->
+      <section id="results" hidden>
+        <div class="card summary-card">
+          <h2>요약</h2>
+          <p id="summary-text"></p>
+          <ul id="stats" class="stats"></ul>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <h2>결정사항</h2>
+              <span id="decisions-count" class="pill">0</span>
+            </div>
+            <p class="sub">이미 확정되어, 다음 사람이 전제로 삼아도 되는 것</p>
+            <div id="decisions" class="list"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>작업사항</h2>
+              <span id="tasks-count" class="pill">0</span>
+            </div>
+            <p class="sub">진행중이거나 아직 남아 있는 것</p>
+            <div id="tasks" class="list"></div>
+          </div>
+        </div>
+
+        <div class="card highlight-card">
+          <div class="card-head">
+            <h2>지난 브리핑 이후 변경점</h2>
+            <span id="changes-count" class="pill pill-accent">0</span>
+          </div>
+          <p class="sub">이미 알고 있는 내용은 빼고, 새로 생기거나 바뀐 것만</p>
+          <div id="changes" class="list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>중복 제거된 로그</h2>
+            <span id="logs-count" class="pill">0</span>
+          </div>
+          <p class="sub">같은 사건이 여러 툴에 다르게 기록된 것을 한 건으로 병합했습니다</p>
+          <div id="logs" class="list"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
