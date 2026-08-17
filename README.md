@@ -1,4 +1,4 @@
-# border 2 - lang
+# [Timezone-relay] border 2 - language
 
 현재 구현은 크게 두 가지 흐름으로 구성되어 있습니다.
 
