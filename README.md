@@ -1,6 +1,6 @@
 # [Timezone-relay] border 2 - language
 
-<p>$\huge{\large{\color{#DD6565}PR 경고: Package.json이 충돌할 수 있습니다.}}$</p>
+<span>$\huge{\large{\color{#DD6565}PR 경고: Package.json이 충돌할 수 있습니다.}}$</span>
 
 현재 구현은 크게 두 가지 흐름으로 구성되어 있습니다.
 
