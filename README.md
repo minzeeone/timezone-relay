@@ -1,6 +1,22 @@
 # [Timezone-relay] border 2 - language
 
-<span>$\huge{\large{\color{#DD6565}PR\ 경고:\ Package.json이\ 충돌할\ 수\ 있습니다.}}$</span>
+> [!WARNING]
+> ### $\color{#DD6565}{\textsf{프론트엔드 구조 변경 주의}}$
+>
+> 본 브랜치는 **React + Vite** 기반으로 구현되어 있어  
+> 기존 **Vanilla HTML / CSS / JavaScript** 프로젝트와 구조가 다릅니다.
+>
+> 병합 시 다음 항목에 영향을 줄 수 있습니다.
+>
+> - 🔴 `index.html` — 기존 HTML 구조와 충돌 가능
+> - 🟠 `package.json` — React / Vite 의존성 및 실행 환경 추가
+> - 🟡 `CSS` — 기존 전역 스타일과 충돌 가능
+> - 🟣 `JavaScript` — 기존 DOM 기반 로직과 React 구조의 차이
+> - 🔵 `Build` — 기존 실행 방식에서 Vite 기반 빌드 방식으로 변경될 수 있음
+>
+> $\color{#DD6565}{\textsf{\textbf{PR을 Merge하기 전에 프론트엔드 구조를 반드시 확인해주세요.}}}$
+
+-----------------------------------
 
 현재 구현은 크게 두 가지 흐름으로 구성되어 있습니다.
 
