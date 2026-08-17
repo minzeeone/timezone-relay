@@ -356,6 +356,9 @@ function App() {
   const [shiftModalStep, setShiftModalStep] = useState('confirm');
   const [selectedHandoffRecipient, setSelectedHandoffRecipient] = useState('');
   const [selectedHandoffProject, setSelectedHandoffProject] = useState('');
+  // Border 04 (조직) — 실제 AI 인수인계 브리핑 결과
+  const [handoffBriefing, setHandoffBriefing] = useState(null);
+  const [handoffBriefingError, setHandoffBriefingError] = useState('');
   const [termForm, setTermForm] = useState(emptyTermForm);
   const conversationEndRef = useRef(null);
 
@@ -630,6 +633,43 @@ function App() {
     setSelectedHandoffRecipient('');
     setSelectedHandoffProject('');
     setHandoffAdditionalNote('');
+    setHandoffBriefing(null);
+    setHandoffBriefingError('');
+  };
+
+  /**
+   * Border 04 (조직) — 실제 인수인계 브리핑을 생성합니다.
+   *
+   * 서버가 프로젝트별 수집 로그(Slack/GitHub/Notion)를 모아 AI 에 넘기고,
+   * 중복 제거 / 결정사항 / 작업사항 / 지난 브리핑 대비 변경점을 돌려줍니다.
+   * 실패해도 모달 흐름은 끊지 않고, 검토 단계에서 기존 목업으로 표시됩니다.
+   */
+  const generateHandoffBriefing = async () => {
+    setHandoffBriefing(null);
+    setHandoffBriefingError('');
+
+    const projectName = selectedHandoffProject
+      ? selectedHandoffProject.replace(/-\d+$/, '')
+      : 'Project Aurora';
+
+    try {
+      const response = await fetch('/api/handoff/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project: projectName,
+          additionalNote: handoffAdditionalNote,
+          recipient: selectedHandoffRecipient,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? `서버 오류 (${response.status})`);
+
+      setHandoffBriefing(payload);
+    } catch (error) {
+      setHandoffBriefingError(error.message);
+    }
   };
 
   const deliverHandoffToMessenger = () => {
@@ -1278,6 +1318,8 @@ function App() {
             projects={handoffProjects}
             selectedRecipient={selectedHandoffRecipient}
             selectedProject={selectedHandoffProject}
+            briefing={handoffBriefing}
+            briefingError={handoffBriefingError}
             onSelectRecipient={setSelectedHandoffRecipient}
             onSelectProject={setSelectedHandoffProject}
             onAdditionalNoteChange={setHandoffAdditionalNote}
@@ -1328,6 +1370,7 @@ function App() {
               }
               if (shiftModalStep === 'additional') {
                 setShiftModalStep('generating');
+                generateHandoffBriefing();
                 return;
               }
               if (shiftModalStep === 'generating') {

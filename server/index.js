@@ -3,6 +3,9 @@ import express from 'express';
 import OpenAI from 'openai';
 import { fileURLToPath } from 'node:url';
 
+import { run as runBorder04 } from './borders/border04-org.js';
+import { collectProjectLogs } from './data/projectLogs.js';
+
 dotenv.config({
   path: fileURLToPath(new URL('../.env', import.meta.url)),
 });
@@ -278,6 +281,38 @@ app.post('/api/localize', async (req, res) => {
   }
 });
 
+/**
+ * Border 04 (조직) — 인수인계 브리핑 생성.
+ *
+ * ShiftEndModal 의 "생성 중..." 단계에서 호출됩니다.
+ * 프로젝트별 수집 로그 + 사용자가 추가로 남긴 전달사항을 함께 넣어,
+ * 중복 제거 / 결정사항 / 작업사항 / 지난 브리핑 대비 변경점을 만들어 돌려줍니다.
+ */
+app.post('/api/handoff/generate', async (req, res) => {
+  try {
+    const { project, additionalNote, recipient } = req.body ?? {};
+
+    if (typeof project !== 'string' || !project.trim()) {
+      res.status(400).json({ error: '`project` must be a non-empty string.' });
+      return;
+    }
+
+    const collected = collectProjectLogs(project.trim());
+    const note = typeof additionalNote === 'string' ? additionalNote.trim() : '';
+    const logText = note
+      ? `${collected}\n[추가 전달사항 — ${recipient || '인수자'}에게] ${note}`
+      : collected;
+
+    const briefing = await runBorder04({ logText, projectId: project.trim() });
+    res.json(briefing);
+  } catch (error) {
+    console.error('Handoff API error:', error);
+    res.status(error.status || 500).json({
+      error: error.message || '인수인계 브리핑 생성에 실패했습니다.',
+    });
+  }
+});
+
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && 'body' in err) {
     res.status(400).json({ error: 'Request body must be valid JSON.' });
@@ -288,5 +323,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`APEX localization server listening on http://127.0.0.1:${PORT}`);
+  console.log(`APEX server listening on http://127.0.0.1:${PORT}`);
+  console.log(`  Border 02 언어  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '키 없음 (오류 반환)'}`);
+  console.log(`  Border 04 조직  : ${process.env.ANTHROPIC_API_KEY ? 'Claude 연결됨' : '데모 모드'}`);
 });

@@ -3,3 +3,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Border 04 이 저장하는 직전 브리핑 (변경점 계산용)
+/data/
