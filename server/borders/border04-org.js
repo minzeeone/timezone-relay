@@ -1,4 +1,4 @@
-import { callClaude, hasApiKey } from '../llm.js';
+import { callLLM, hasApiKey } from '../llm.js';
 import { getLastBriefing, saveBriefing } from '../store.js';
 import { demoAnalyze } from './border04-demo.js';
 
@@ -49,10 +49,22 @@ const SYSTEM_PROMPT = `당신은 국경을 넘어 일하는 팀의 "인수인계
 - owner 를 로그에서 알 수 없으면 빈 문자열로 두세요. 추측해서 채우지 마세요.
 
 ## 4. changes — 지난 브리핑 대비 변경점
-- previous_briefing 이 주어지면, **그 이후로 새로 생기거나 바뀐 것만** 넣습니다. 이미 지난 브리핑에 있던 그대로인 항목은 넣지 마세요.
-- type: new(새로 생김) / updated(내용이나 상태가 바뀜, 예: in_progress → 완료) / removed(취소·철회됨).
-- detail 에는 "무엇이 어떻게 바뀌었는지" 를 씁니다. 예: "진행중 → 머지 완료".
-- previous_briefing 이 비어 있으면 changes 는 빈 배열로 두고 is_first_briefing 을 true 로 하세요.
+previous_briefing 이 비어 있으면 changes 는 빈 배열로 두고 is_first_briefing 을 true 로 하세요.
+비어 있지 않으면 **반드시 아래 대조 절차를 수행**하고 그 결과를 changes 에 적으세요.
+
+대조 절차 — previous_briefing 의 decisions/tasks 를 한 항목씩 이번 결과와 맞춰봅니다:
+- 같은 사안인데 **상태**가 달라졌다 (todo → in_progress, blocked 해제 등) → updated
+- 같은 사안인데 **담당자**가 달라졌다 → updated.
+  담당자 변경은 인수인계에서 가장 중요한 변경입니다. 절대 빠뜨리지 마세요.
+- 같은 사안인데 **내용·결론**이 달라졌다 → updated
+- 이번 결과에만 있고 previous_briefing 에는 없다 → new
+- previous_briefing 에 있었는데 이번에 사라졌거나 철회·보류되었다 → removed
+
+주의:
+- **previous_briefing 에 이미 같은 내용으로 있던 항목은 넣지 마세요.** 그건 변경이 아닙니다.
+- 노이즈로 제외한 줄(봇 알림, 인사 등)은 changes 에도 넣지 마세요.
+- detail 은 화살표로 씁니다. 예: "담당 김멋사 → 와구리 카오루코", "진행중 → 머지 완료".
+- 정말로 달라진 게 없으면 빈 배열로 두세요. 억지로 채우지 마세요.
 
 ## 공통 규칙
 - 로그에 없는 내용을 지어내지 마세요. 근거가 없으면 항목을 만들지 않습니다.
@@ -181,11 +193,11 @@ export async function run({ logText, projectId = 'default' }) {
   let runMeta;
 
   if (hasApiKey()) {
-    const { data, usage, model, latencyMs } = await callClaude({
+    const { data, usage, model, latencyMs } = await callLLM({
       system: SYSTEM_PROMPT,
       user: buildUserMessage({ projectId, logText, previous }),
       schema: SCHEMA,
-      maxTokens: 8000,
+      schemaName: 'handoff_briefing',
     });
     result = data;
     runMeta = {
@@ -194,7 +206,6 @@ export async function run({ logText, projectId = 'default' }) {
       latencyMs,
       inputTokens: usage.input_tokens,
       outputTokens: usage.output_tokens,
-      cacheReadTokens: usage.cache_read_input_tokens ?? 0,
     };
   } else {
     const { data, latencyMs } = demoAnalyze({ logText, previous });

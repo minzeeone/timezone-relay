@@ -2,7 +2,7 @@
  * API 키가 없을 때 쓰는 데모 모드.
  *
  * 규칙(키워드 + 토큰 겹침)만으로 흉내를 냅니다. UI 흐름을 확인하기 위한 것이고,
- * 실제 발표/제출에서는 반드시 .env 에 ANTHROPIC_API_KEY 를 넣고 live 모드로 돌리세요.
+ * 실제 발표/제출에서는 반드시 .env 에 OPENAI_API_KEY 를 넣고 live 모드로 돌리세요.
  *
  * 이 파일이 존재하는 이유 자체가 Border 04 의 논지이기도 합니다:
  * 아래 규칙들은 "결제 API 다 됐어요" 와 "Merged PR #42" 를 절대 같은 사건으로 못 묶습니다.
@@ -142,7 +142,7 @@ export function demoAnalyze({ logText, previous }) {
     data: {
       summary:
         '데모 모드로 생성된 브리핑입니다. 규칙 기반이라 표현이 다른 같은 사건은 묶이지 않습니다. ' +
-        '.env 에 ANTHROPIC_API_KEY 를 넣고 서버를 다시 켜면 실제 AI 분석이 동작합니다.',
+        '.env 에 OPENAI_API_KEY 를 넣고 서버를 다시 켜면 실제 AI 분석이 동작합니다.',
       is_first_briefing: !previous,
       noise_removed: noiseRemoved,
       deduped_logs: dedupedLogs,

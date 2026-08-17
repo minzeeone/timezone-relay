@@ -325,5 +325,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`APEX server listening on http://127.0.0.1:${PORT}`);
   console.log(`  Border 02 언어  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '키 없음 (오류 반환)'}`);
-  console.log(`  Border 04 조직  : ${process.env.ANTHROPIC_API_KEY ? 'Claude 연결됨' : '데모 모드'}`);
+  console.log(`  Border 04 조직  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '데모 모드'}`);
 });
