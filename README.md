@@ -1,5 +1,7 @@
 # [Timezone-relay] border 2 - language
 
+<p>$\huge{\large{\color{#DD6565}PR 경고: Package.json이 충돌할 수 있습니다.}}$</p>
+
 현재 구현은 크게 두 가지 흐름으로 구성되어 있습니다.
 
 - 글로벌 협업 메신저: 팀원과 대화하고, 메시지를 AI 현지화한 뒤 전송할 수 있습니다.
