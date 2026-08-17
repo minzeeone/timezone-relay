@@ -1,0 +1,342 @@
+@keyframes windowReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panelRise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes profilePanelIn {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes profileContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rowReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes previewReveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0 round 10px);
+    transform: translateY(12px) scale(0.985);
+  }
+
+  65% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 10px);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 10px);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes previewItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes handoffDocumentReveal {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(70px) rotateX(22deg) rotateY(-18deg) scale(0.62);
+  }
+
+  64% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(-8px) rotateX(0deg) rotateY(0deg) scale(1.035);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) rotateX(0deg) rotateY(0deg) scale(1);
+  }
+}
+
+@keyframes handoffPageNextIn {
+  from {
+    opacity: 0.35;
+    filter: blur(5px);
+    transform: translateX(86px) translateY(12px) rotateY(-34deg) rotateZ(4deg) scale(0.94);
+  }
+
+  68% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(-8px) translateY(-4px) rotateY(4deg) rotateZ(-0.7deg) scale(1.012);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(0) translateY(0) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+}
+
+@keyframes handoffPagePrevIn {
+  from {
+    opacity: 0.35;
+    filter: blur(5px);
+    transform: translateX(-86px) translateY(12px) rotateY(34deg) rotateZ(-4deg) scale(0.94);
+  }
+
+  68% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(8px) translateY(-4px) rotateY(-4deg) rotateZ(0.7deg) scale(1.012);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(0) translateY(0) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+}
+
+@keyframes handoffStackBreathe {
+  0%,
+  100% {
+    transform: translate(44px, -46px) rotate(6deg) scale(0.96);
+  }
+
+  50% {
+    transform: translate(52px, -50px) rotate(7deg) scale(0.955);
+  }
+}
+
+@keyframes handoffStackBreatheAlt {
+  0%,
+  100% {
+    transform: translate(-64px, -54px) rotate(-2deg) scale(0.94);
+  }
+
+  50% {
+    transform: translate(-72px, -58px) rotate(-3deg) scale(0.935);
+  }
+}
+
+@keyframes acronymPopoverIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(-8px) scale(1);
+  }
+}
+
+@keyframes shimmerSweep {
+  from {
+    transform: translateX(-120%);
+  }
+
+  to {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(191, 106, 247, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 18px rgba(191, 106, 247, 0.28);
+  }
+}
+
+@keyframes dashboardFadeLift {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes localNoticeIn {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(-8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dashboardScalePop {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(10px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dashboardAmbientGlow {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translate3d(-2%, 0, 0) scale(1);
+  }
+
+  50% {
+    opacity: 0.34;
+    transform: translate3d(2%, -1%, 0) scale(1.04);
+  }
+}
+
+@keyframes dashboardStatusBlink {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 119, 69, 0);
+  }
+
+  45% {
+    box-shadow: 0 0 0 5px rgba(255, 119, 69, 0.14);
+  }
+}
+
+@keyframes aiSparkPulse {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes handoffLineDraw {
+  from {
+    opacity: 0.25;
+    transform: scaleY(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes handoffDotPop {
+  from {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes handoffButtonGlow {
+  0%,
+  100% {
+    box-shadow: 0 10px 28px rgba(255, 119, 69, 0.16);
+  }
+
+  50% {
+    box-shadow: 0 12px 34px rgba(255, 119, 69, 0.3);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

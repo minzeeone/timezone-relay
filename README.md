@@ -1,128 +1,180 @@
-# 타임존 릴레이 AI
+# border 2 - lang
 
-멋쟁이사자처럼 대학 14th 해커톤 · LIKELION 트랙
+현재 구현은 크게 두 가지 흐름으로 구성되어 있습니다.
 
-팀원이 하루 작업을 마치면 AI가 인수인계 브리핑을 자동 생성해, 다음 시간대에 출근하는 팀원에게 전달하는 서비스.
+- 글로벌 협업 메신저: 팀원과 대화하고, 메시지를 AI 현지화한 뒤 전송할 수 있습니다.
+- AI 업무 인수인계 UI: 퇴근 전 인수인계 대상자와 프로젝트를 선택하고, mock 데이터를 기반으로 인수인계 브리핑을 생성/검토/전달하는 화면 흐름을 제공합니다.
 
-| Border | 주제 | 담당 | 상태 |
-| --- | --- | --- | --- |
-| 01 | 지리 — 타임존 자동 감지, 상대 국가 시간, 공휴일 반영 | 준서 | 구현 전 |
-| 02 | 언어 — 용어 가이드라인, 약어 설명, 고유명사 보존 현지화 | 의중 | 구현 전 |
-| 03 | 문화 — 완곡 표현의 실제 의미 재해석 | 민석 | 구현 전 |
-| 04 | **조직 — 여러 툴 기록 통합 · 중복 제거 · 결정/작업 분리 · 변경점** | **지원** | **구현 완료** |
+실제 OpenAI API가 연결된 기능은 메시지 현지화(`/api/localize`)입니다. 인수인계 생성 자체는 아직 실제 AI API나 데이터베이스에 연결되어 있지 않고, 프론트엔드 mock UI로 동작합니다.
 
----
+## 핵심 기능
 
-## 실행
+- 메신저 대화 목록과 채팅 화면
+- 서버 측 OpenAI Responses API 기반 메시지 현지화
+- 현지화 결과 미리보기, 적용, 원문 보기
+- 약어/전문 용어 설명 팝오버
+- 사용자가 직접 추가하는 용어 설명
+- 팀원 프로필 패널
+- Handoff Dashboard
+- 퇴근 및 인수인계 생성 모달 플로우
+- 인수인계 문서 미리보기, 페이지 넘김, 한국어/일본어 전환
+- 생성된 인수인계 브리핑을 메신저 카드 형태로 전달하는 mock 흐름
+
+## 기술 스택
+
+- React
+- Vite
+- Tailwind CSS v4 Vite plugin
+- CSS
+- Bootstrap Icons
+- SUIT 웹폰트
+- Express
+- dotenv
+- OpenAI SDK
+
+## 설치 방법
 
 ```bash
 npm install
-cp .env.example .env      # ANTHROPIC_API_KEY 를 채웁니다
-npm start                 # http://localhost:3000
 ```
 
-`npm run dev` 로 실행하면 파일 저장 시 자동 재시작됩니다.
+## 실행 방법
 
-**API 키가 없으면 자동으로 데모 모드로 뜹니다.** 규칙 기반으로 흉내만 내기 때문에
-"결제 다 됐어요"와 "merged PR #42"를 같은 사건으로 묶지 못합니다.
-발표·제출 시에는 반드시 키를 넣고 live 모드로 돌리세요. 우측 상단 배지로 현재 모드를 확인할 수 있습니다.
+프론트엔드와 백엔드 서버를 각각 실행해야 합니다.
 
-키 발급: <https://console.anthropic.com> → API Keys
+터미널 1:
 
----
-
-## Border 04 — 조직 (담당: 지원)
-
-### 무엇을 하는가
-
-여러 툴(Slack / GitHub / Notion)에 흩어진 하루치 기록을 붙여넣으면 네 가지를 만들어 냅니다.
-
-1. **중복 제거된 로그** — 같은 사건이 툴마다 다르게 기록된 것을 한 건으로 병합
-2. **결정사항** — 이미 확정되어 다음 사람이 전제로 삼아도 되는 것
-3. **작업사항** — 진행중 / 할 일 / 막힘
-4. **변경점** — 지난 브리핑 이후 새로 생기거나 바뀐 것만
-
-### AI가 핵심인 지점
-
-중복 제거를 문자열 유사도로 하면 아래 세 줄은 **단어가 거의 겹치지 않아 절대 묶이지 않습니다.**
-
-```
-[Slack]  지원: 결제 모듈 리팩터링 브랜치 올렸어요
-[GitHub] merged PR #42 into main
-[Notion] 결제 모듈 리팩터링 완료 ✅
+```bash
+npm run server
 ```
 
-"가리키는 사건이 같은가"를 판단하려면 의미 이해가 필요하고, 그게 이 모듈이 LLM을 쓰는 이유입니다.
-실제 샘플 로그(13줄) 실행 결과 → **4건으로 병합, 그중 1건은 원문 7줄이 합쳐진 것.**
+터미널 2:
 
-같은 이유로 "확정된 결정"과 "아직 논의 중"을 가르는 것도 규칙으로는 안 됩니다.
-`"다들 동의하신 걸로 알게요"` 가 결정인지 일방 통보인지는 문맥 판단입니다.
-
-`src/borders/border04-demo.js` 는 이 논지를 보여주는 대조군이기도 합니다 —
-규칙 기반 구현체가 실제로 무엇을 못 하는지 눈으로 확인할 수 있습니다.
-
-### 변경점이 동작하는 방식
-
-브리핑을 생성할 때마다 `data/briefings.json` 에 직전 결과를 저장하고,
-다음 실행 때 그것을 프롬프트에 함께 넣어 "달라진 것만" 뽑게 합니다.
-
-시연할 때는 **같은 프로젝트로 두 번 돌리세요.**
-
-- 1회차: `changes` 는 비어 있고 "첫 브리핑입니다" 표시
-- 2회차(다음날 로그): `신규 / 변경 / 취소` 태그로 달라진 것만 표시
-
-`이전 브리핑 초기화` 버튼으로 언제든 1회차 상태로 되돌릴 수 있습니다.
-
----
-
-## 구조
-
-```
-server.js                      Express 서버 + border 라우팅
-src/
-  llm.js                       Claude 호출 공용 래퍼 (JSON 스키마 강제)
-  store.js                     직전 브리핑 저장 (변경점 계산용)
-  borders/
-    border01-geo.js            준서  ← 여기를 채우면 됩니다
-    border02-lang.js           의중  ← 여기를 채우면 됩니다
-    border03-culture.js        민석  ← 여기를 채우면 됩니다
-    border04-org.js            지원  (완성)
-    border04-demo.js           API 키 없을 때의 규칙 기반 대체 구현
-public/                        프론트엔드 (빌드 과정 없음)
-data/briefings.json            직전 브리핑 (gitignore)
+```bash
+npm run dev
 ```
 
-## 팀원이 자기 border를 붙이는 법
+Vite 개발 서버 주소로 접속합니다. 일반적으로 `http://localhost:5173`에서 실행됩니다.
 
-각자 `src/borders/borderNN-*.js` **파일 하나만** 수정하면 됩니다. 다른 파일은 건드릴 필요 없습니다.
+프로덕션 빌드 확인:
 
-```js
-export const meta = { id: 'border01', name: '지리', owner: '준서', implemented: true };
-
-export async function run({ logText, projectId }) {
-  const { data } = await callClaude({
-    system: '...',                      // 프롬프트
-    user: logText,
-    schema: { /* 원하는 JSON 스키마 */ }, // 이 모양 그대로 파싱돼서 돌아옵니다
-  });
-  return data;
-}
+```bash
+npm run build
 ```
 
-- `callClaude` 는 `output_config.format` 으로 JSON 스키마를 강제하기 때문에
-  "JSON으로 답해줘"라고 부탁할 필요가 없고, 코드펜스가 섞여 나오거나 파싱이 깨지지 않습니다.
-- 시스템 프롬프트는 자동으로 캐싱돼서 반복 호출 비용이 줄어듭니다.
-- 등록은 이미 돼 있습니다. 파일을 채우는 순간 `POST /api/border01/run` 이 살아납니다.
+빌드 결과 미리보기:
 
-## API
+```bash
+npm run preview
+```
 
-| 메서드 | 경로 | 설명 |
-| --- | --- | --- |
-| `GET` | `/api/health` | 현재 모드(live/demo)와 border 목록 |
-| `POST` | `/api/:borderId/run` | `{ logText, projectId }` → 브리핑 |
-| `GET` | `/api/:borderId/previous?projectId=` | 직전 브리핑 조회 |
-| `POST` | `/api/:borderId/reset` | 직전 브리핑 초기화 |
+## 환경변수 설정
 
-## 사용 모델
+루트 디렉터리에 `.env` 파일을 둡니다.
 
-`claude-opus-5` · 구조화 출력(JSON Schema) · 프롬프트 캐싱
+```env
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_LOCALIZATION_MODEL=gpt-5-nano
+PORT=3001
+```
+
+- `OPENAI_API_KEY`: 서버에서 OpenAI API를 호출할 때 사용합니다.
+- `OPENAI_LOCALIZATION_MODEL`: 현지화 API에서 사용할 모델입니다. 설정하지 않으면 `gpt-5-nano`를 사용합니다.
+- `PORT`: Express 서버 포트입니다. 설정하지 않으면 `3001`을 사용합니다.
+
+API key는 클라이언트 코드나 `VITE_` 환경변수에 넣지 않습니다. 현재 클라이언트는 `/api/localize`만 호출하고, OpenAI API는 `server/index.js`에서만 호출합니다.
+
+`.gitignore`에는 `.env`, `.env.*`, `node_modules/`, `dist/`가 제외되어 있습니다.
+
+## 주요 폴더 구조
+
+```text
+.
+├─ index.html
+├─ package.json
+├─ vite.config.js
+├─ server/
+│  └─ index.js
+└─ src/
+   ├─ App.jsx
+   ├─ main.jsx
+   ├─ styles.css
+   ├─ assets/
+   │  ├─ profile-banner.jpg
+   │  └─ waguri-kaoruko.jpg
+   ├─ components/
+   │  ├─ AcronymText.jsx
+   │  ├─ Avatar.jsx
+   │  ├─ ProfilePanel.jsx
+   │  ├─ chat/
+   │  │  └─ chat.css
+   │  ├─ dashboard/
+   │  │  ├─ HandoffDashboard.jsx
+   │  │  └─ dashboard.css
+   │  ├─ handoff/
+   │  │  ├─ ShiftEndModal.jsx
+   │  │  └─ handoff.css
+   │  └─ project/
+   │     └─ project.css
+   ├─ data/
+   │  ├─ chatMock.js
+   │  ├─ handoffFlowMock.js
+   │  └─ handoffMock.js
+   ├─ styles/
+   │  ├─ animations.css
+   │  ├─ globals.css
+   │  ├─ navigation.css
+   │  ├─ responsive.css
+   │  ├─ tokens.css
+   │  └─ utilities.css
+   ├─ types/
+   │  ├─ handoff.ts
+   │  └─ localization.ts
+   └─ utils/
+      ├─ acronyms.js
+      └─ messageGrouping.js
+```
+
+`src/server/` 디렉터리는 현재 비어 있습니다. 실제 API 서버는 루트의 `server/index.js`에 있습니다.
+
+## Git 작업 방법
+
+Git을 사용하는 경우 다음 흐름을 권장합니다.
+
+```bash
+git status
+git checkout -b feature/작업-이름
+npm run build
+git add README.md ARCHITECTURE.md
+git commit -m "docs: add onboarding documentation"
+```
+
+작업 전후로 확인할 것:
+
+- `.env`는 커밋하지 않습니다.
+- `node_modules/`와 `dist/`는 커밋하지 않습니다.
+- 기능 수정 시 `npm run build`로 Vite 빌드 오류를 확인합니다.
+- UI 작업 시 Dashboard, Messenger, Handoff modal 흐름을 함께 확인합니다.
+
+## 현재 개발 상태
+
+구현되어 있는 것:
+
+- React + Vite 기반 단일 페이지 UI
+- Express 기반 최소 백엔드
+- `/api/localize` 메시지 현지화 API
+- OpenAI Responses API 기반 구조화 JSON 응답 처리
+- Dashboard, Messenger, Handoff modal, Handoff document UI
+- mock data 기반 팀원/메시지/인수인계 데이터
+- CSS 파일 역할별 분리
+
+아직 구현되지 않은 것:
+
+- 실제 AI 인수인계 생성 API
+- 데이터베이스 저장
+- 로그인/회원가입
+- WebSocket 실시간 통신
+- Slack, Jira, GitHub, Notion 등 외부 서비스 연동
+- 실제 timezone API
+- 인수인계 문서 파일 내보내기 실제 구현
+

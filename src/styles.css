@@ -1,0 +1,12 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./styles/tokens.css";
+@import "./styles/animations.css";
+@import "./styles/globals.css";
+@import "./styles/utilities.css";
+@import "./styles/navigation.css";
+@import "./components/chat/chat.css";
+@import "./components/dashboard/dashboard.css";
+@import "./components/project/project.css";
+@import "./components/handoff/handoff.css";
+@import "./styles/responsive.css";

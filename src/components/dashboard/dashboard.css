@@ -1,0 +1,618 @@
+.apex-window.view-dashboard {
+  position: relative;
+  background:
+    radial-gradient(circle at 46% 64%, rgba(255, 116, 70, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(5, 5, 5, 0.92) 0%, rgba(6, 6, 6, 0.9) 58%, rgba(65, 26, 16, 0.78) 100%);
+}
+
+.apex-window.view-dashboard::before {
+  position: absolute;
+  inset: 20% 12% 5% 8%;
+  content: '';
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 38% 72%, rgba(255, 119, 69, 0.18), transparent 30%),
+    radial-gradient(circle at 76% 88%, rgba(255, 119, 69, 0.1), transparent 24%);
+  filter: blur(28px);
+  animation: dashboardAmbientGlow 7.5s ease-in-out infinite;
+}
+
+.apex-window.view-dashboard .topbar {
+  grid-template-columns: 190px minmax(520px, 1fr) auto;
+}
+
+.apex-window.view-dashboard .top-actions {
+  grid-column: 3;
+  gap: 16px;
+  margin-right: 18px;
+}
+
+.apex-window.view-dashboard .notification-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  animation: dashboardScalePop 360ms 260ms var(--ease-out) both;
+}
+
+.apex-window.view-dashboard .notification-button i {
+  font-size: 18px;
+}
+
+.apex-window.view-dashboard .notification-button span {
+  top: 8px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+}
+
+.handoff-dashboard {
+  position: relative;
+  display: block;
+  grid-column: 2 / -1;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  animation: panelRise 520ms 90ms var(--ease-out) both;
+}
+
+.wire-hero {
+  position: absolute;
+  top: clamp(42px, 7.2vh, 86px);
+  left: clamp(4px, 0.7vw, 18px);
+  display: grid;
+  gap: 14px;
+}
+
+.wire-hero p,
+.wire-hero h2,
+.wire-hero-actions {
+  animation: dashboardFadeLift 520ms var(--ease-out) both;
+}
+
+.wire-hero p {
+  animation-delay: 120ms;
+}
+
+.wire-hero h2 {
+  animation-delay: 190ms;
+}
+
+.wire-hero-actions {
+  animation-delay: 270ms;
+}
+
+.wire-hero p {
+  margin: 0;
+  color: #e4e4e8;
+  font-size: clamp(23px, 1.8vw, 32px);
+  font-weight: 390;
+  letter-spacing: 0;
+}
+
+.wire-hero p strong {
+  color: #fff;
+  font-weight: 690;
+}
+
+.wire-hero h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(39px, 3.55vw, 59px);
+  font-weight: 720;
+  letter-spacing: 0;
+  line-height: 1.02;
+}
+
+.wire-hero h2 span {
+  color: #ff7745;
+}
+
+.wire-hero-actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.wire-hero-actions button {
+  display: inline-flex;
+  min-width: 119px;
+  min-height: 41px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 22px;
+  border: 2px solid #ff7745;
+  border-radius: 999px;
+  color: #ff8a5f;
+  background: transparent;
+  font-size: 16px;
+  font-weight: bold;
+  transition: transform 180ms var(--ease-snap), background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.wire-hero-actions button.primary {
+  color: #15110f;
+  background: #ff7745;
+  box-shadow: 0 0 0 2px rgba(255, 119, 69, 0.18), 0 10px 26px rgba(255, 119, 69, 0.22);
+}
+
+.wire-hero-actions button:hover {
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 12px 28px rgba(255, 119, 69, 0.16);
+}
+
+.wire-stat-row {
+  position: absolute;
+  top: clamp(76px, 11.8vh, 134px);
+  right: clamp(40px, 5.1vw, 92px);
+  display: grid;
+  grid-template-columns: repeat(4, 84px);
+  gap: clamp(18px, 2.6vw, 46px);
+  align-items: start;
+}
+
+.wire-stat-row article {
+  display: grid;
+  grid-template-columns: 32px auto;
+  grid-template-rows: auto auto;
+  column-gap: 9px;
+  align-items: center;
+  color: #fff;
+  animation: dashboardScalePop 420ms var(--ease-out) both;
+}
+
+.wire-stat-row article:nth-child(1) {
+  animation-delay: 240ms;
+}
+
+.wire-stat-row article:nth-child(2) {
+  animation-delay: 300ms;
+}
+
+.wire-stat-row article:nth-child(3) {
+  animation-delay: 360ms;
+}
+
+.wire-stat-row article:nth-child(4) {
+  animation-delay: 420ms;
+}
+
+.wire-stat-row i {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  grid-row: 1 / 3;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.24);
+  font-size: 13px;
+  transition: transform 180ms var(--ease-snap), background 180ms ease;
+}
+
+.wire-stat-row article:hover i {
+  background: rgba(255, 255, 255, 0.34);
+  transform: scale(1.08);
+}
+
+.wire-stat-row strong {
+  color: #fff;
+  font-size: clamp(42px, 3.7vw, 60px);
+  font-weight: 470;
+  line-height: 0.95;
+}
+
+.wire-stat-row span {
+  color: #f0f0f2;
+  font-size: 15px;
+  font-weight: 560;
+  white-space: nowrap;
+}
+
+.wire-attention,
+.wire-handoff,
+.wire-request,
+.wire-team {
+  position: absolute;
+  min-width: 0;
+}
+
+.wire-attention {
+  left: clamp(0px, 0.55vw, 16px);
+  bottom: clamp(44px, 5.2vh, 74px);
+  width: clamp(320px, 22.5vw, 400px);
+}
+
+.wire-handoff {
+  left: 50%;
+  bottom: clamp(210px, 24vh, 286px);
+  width: clamp(330px, 24vw, 400px);
+  transform: translateX(-60%);
+}
+
+.wire-request {
+  left: 50%;
+  bottom: clamp(44px, 5.2vh, 74px);
+  width: clamp(330px, 24vw, 400px);
+  transform: translateX(-60%);
+}
+
+.wire-team {
+  right: clamp(38px, 4.4vw, 84px);
+  bottom: clamp(44px, 5.2vh, 74px);
+  width: clamp(330px, 24vw, 400px);
+}
+
+.wire-team header,
+.wire-handoff header,
+.wire-attention header,
+.wire-request header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  animation: dashboardFadeLift 420ms var(--ease-out) both;
+}
+
+.wire-handoff header {
+  animation-delay: 380ms;
+}
+
+.wire-attention header {
+  animation-delay: 450ms;
+}
+
+.wire-request header {
+  animation-delay: 520ms;
+}
+
+.wire-team header {
+  animation-delay: 450ms;
+}
+
+.wire-team h3,
+.wire-handoff h3,
+.wire-attention h3,
+.wire-request h3 {
+  margin: 0;
+  color: #ffffffeb;
+  font-size: clamp(23px, 1.7vw, 30px);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.wire-team h3::before,
+.wire-handoff h3::before,
+.wire-attention h3::before,
+.wire-request h3::before {
+  display: inline-block;
+  width: 4px;
+  height: 28px;
+  margin-right: 12px;
+  content: '';
+  border-radius: 999px;
+  background: #ff7745;
+  vertical-align: -6px;
+}
+
+.wire-request h3::before,
+.wire-team h3::before,
+.wire-handoff h3::before {
+  background: #fff;
+}
+
+.wire-team header button,
+.wire-handoff header button,
+.wire-attention header button,
+.wire-request header button {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  place-items: center;
+  border-radius: 50%;
+  color: #111;
+  background: #fff;
+  font-size: 20px;
+  transition: transform 180ms var(--ease-snap), background 180ms ease, box-shadow 180ms ease;
+}
+
+.wire-team header button:hover,
+.wire-handoff header button:hover,
+.wire-attention header button:hover,
+.wire-request header button:hover {
+  transform: rotate(8deg) scale(1.08);
+  box-shadow: 0 10px 24px rgba(255, 255, 255, 0.13);
+}
+
+.wire-team header button {
+  font-size: 25px;
+}
+
+.wire-attention header button {
+  color: #111;
+  background: #ff7745;
+}
+
+.wire-task-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 24px;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 70px;
+  margin-top: 10px;
+  padding: 0 16px 0 24px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 17px;
+  color: #fff;
+  background: rgba(29, 18, 15, 0.66);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  text-align: left;
+  overflow: hidden;
+  animation: dashboardFadeLift 460ms var(--ease-out) both;
+  transition: transform 180ms var(--ease-snap), background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.wire-task-row:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(48, 28, 22, 0.72);
+  box-shadow: 0 14px 30px rgba(255, 119, 69, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px) scale(1.01);
+}
+
+.wire-task-row:nth-of-type(2) {
+  animation-delay: 540ms;
+}
+
+.wire-task-row:nth-of-type(3) {
+  animation-delay: 610ms;
+}
+
+.wire-task-row span {
+  overflow: hidden;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 580;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wire-task-row small {
+  color: #f0f0f2;
+  font-size: 13px;
+  font-weight: 520;
+}
+
+.wire-task-row i {
+  color: #fff;
+  font-size: 20px;
+}
+
+.wire-handoff-list {
+  display: grid;
+  gap: 9px;
+}
+
+.wire-handoff-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: 14px;
+  row-gap: 2px;
+  align-items: center;
+  width: 100%;
+  min-height: 65px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 17px;
+  color: #fff;
+  background: rgba(29, 18, 15, 0.66);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  text-align: left;
+  overflow: hidden;
+  animation: dashboardFadeLift 450ms var(--ease-out) both;
+  transition: transform 180ms var(--ease-snap), background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.wire-handoff-row:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(48, 28, 22, 0.72);
+  box-shadow: 0 14px 30px rgba(255, 119, 69, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px) scale(1.01);
+}
+
+.wire-handoff-row:nth-child(1) {
+  animation-delay: 460ms;
+}
+
+.wire-handoff-row:nth-child(2) {
+  animation-delay: 520ms;
+}
+
+.wire-handoff-row:nth-child(3) {
+  animation-delay: 580ms;
+}
+
+.wire-handoff-row > i {
+  grid-row: 1 / 3;
+  align-self: center;
+  color: #fff;
+  font-size: 28px;
+}
+
+.wire-handoff-row span {
+  grid-row: 1 / 3;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  overflow: hidden;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 580;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wire-handoff-row small {
+  align-self: end;
+  justify-self: end;
+  color: #cfcfd4;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.wire-handoff-row em {
+  grid-column: 3;
+  align-self: start;
+  justify-self: end;
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: #151515;
+  background: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 740;
+  animation: dashboardStatusBlink 2.6s ease-in-out infinite;
+}
+
+.wire-team-card {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 19px;
+  background: rgba(29, 18, 15, 0.64);
+  box-shadow: 0 0 22px rgba(255, 255, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: dashboardFadeLift 480ms 520ms var(--ease-out) both;
+}
+
+.wire-member {
+  display: grid;
+  grid-template-columns: 48px 1fr 28px 28px;
+  gap: 10px;
+  align-items: center;
+  animation: dashboardFadeLift 360ms var(--ease-out) both;
+  transition: transform 160ms var(--ease-snap);
+}
+
+.wire-member:hover {
+  transform: translateX(4px);
+}
+
+.wire-member:nth-child(1) {
+  animation-delay: 580ms;
+}
+
+.wire-member:nth-child(2) {
+  animation-delay: 630ms;
+}
+
+.wire-member:nth-child(3) {
+  animation-delay: 680ms;
+}
+
+.wire-member:nth-child(4) {
+  animation-delay: 730ms;
+}
+
+.wire-member:nth-child(5) {
+  animation-delay: 780ms;
+}
+
+.wire-member-avatar {
+  position: relative;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  color: #171717;
+  background: #ffe9e8;
+  font-size: 22px;
+  font-weight: 700;
+  overflow: visible;
+}
+
+.wire-member-avatar img,
+.handoff-recipient-avatar img,
+.project-target-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  object-position: center;
+}
+
+.wire-member-avatar::after {
+  position: absolute;
+  right: 1px;
+  bottom: 2px;
+  width: 11px;
+  height: 11px;
+  content: '';
+  border: 2px solid #231613;
+  border-radius: 50%;
+  background: #7c7f84;
+}
+
+.wire-member-avatar.online::after {
+  background: var(--green);
+}
+
+.wire-member-avatar.busy::after {
+  background: var(--red);
+}
+
+.wire-member-avatar.away::after {
+  background: #e7f35e;
+}
+
+.wire-member:nth-child(2) .wire-member-avatar {
+  background: #e2ffe8;
+  font-size: 18px;
+}
+
+.wire-member:nth-child(5) .wire-member-avatar {
+  background: #ffe6e6;
+  font-size: 22px;
+}
+
+.wire-member strong {
+  display: block;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 610;
+  letter-spacing: 0;
+}
+
+.wire-member small {
+  display: block;
+  margin-top: 3px;
+  color: #d1d1d7;
+  font-size: 12px;
+  font-weight: 430;
+}
+
+.wire-member button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: transparent;
+}
+
+.wire-member button i {
+  font-size: 18px;
+}
