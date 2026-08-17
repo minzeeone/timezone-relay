@@ -3,6 +3,13 @@ import express from 'express';
 import OpenAI from 'openai';
 import { fileURLToPath } from 'node:url';
 
+<<<<<<< HEAD
+=======
+import { run as runBorder03 } from './borders/border03-culture.js';
+import { run as runBorder04 } from './borders/border04-org.js';
+import { collectProjectLogs } from './data/projectLogs.js';
+
+>>>>>>> 7204bbc (일정 탭 UI 추가)
 dotenv.config({
   path: fileURLToPath(new URL('../.env', import.meta.url)),
 });
@@ -278,6 +285,59 @@ app.post('/api/localize', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
+=======
+/**
+ * Border 04 (조직) — 인수인계 브리핑 생성.
+ *
+ * ShiftEndModal 의 "생성 중..." 단계에서 호출됩니다.
+ * 프로젝트별 수집 로그 + 사용자가 추가로 남긴 전달사항을 함께 넣어,
+ * 중복 제거 / 결정사항 / 작업사항 / 지난 브리핑 대비 변경점을 만들어 돌려줍니다.
+ */
+app.post('/api/handoff/generate', async (req, res) => {
+  try {
+    const { project, additionalNote, recipient } = req.body ?? {};
+
+    if (typeof project !== 'string' || !project.trim()) {
+      res.status(400).json({ error: '`project` must be a non-empty string.' });
+      return;
+    }
+
+    const collected = collectProjectLogs(project.trim());
+    const note = typeof additionalNote === 'string' ? additionalNote.trim() : '';
+    const logText = note
+      ? `${collected}\n[추가 전달사항 — ${recipient || '인수자'}에게] ${note}`
+      : collected;
+
+    const briefing = await runBorder04({ logText, projectId: project.trim() });
+    res.json(briefing);
+  } catch (error) {
+    console.error('Handoff API error:', error);
+    res.status(error.status || 500).json({
+      error: error.message || '인수인계 브리핑 생성에 실패했습니다.',
+    });
+  }
+});
+
+/**
+ * Border 03 (문화) — 완곡 표현의 실제 의미 해석.
+ *
+ * 받은 메시지를 넣으면 표면적 의미 / 실제 의도 / 오해 지점 / 권장 표현을 돌려줍니다.
+ * 프롬프트와 스키마는 민석님이 만든 culture-analysis-prompt.mjs 를 그대로 씁니다.
+ */
+app.post('/api/culture/analyze', async (req, res) => {
+  try {
+    const result = await runBorder03(req.body ?? {});
+    res.json(result);
+  } catch (error) {
+    console.error('Culture API error:', error);
+    res.status(error.status || 500).json({
+      error: error.message || '문화 해석에 실패했습니다.',
+    });
+  }
+});
+
+>>>>>>> 7204bbc (일정 탭 UI 추가)
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && 'body' in err) {
     res.status(400).json({ error: 'Request body must be valid JSON.' });
@@ -288,5 +348,12 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
+<<<<<<< HEAD
   console.log(`APEX localization server listening on http://127.0.0.1:${PORT}`);
+=======
+  console.log(`APEX server listening on http://127.0.0.1:${PORT}`);
+  console.log(`  Border 02 언어  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '키 없음 (오류 반환)'}`);
+  console.log(`  Border 03 문화  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '데모 모드'}`);
+  console.log(`  Border 04 조직  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '데모 모드'}`);
+>>>>>>> 7204bbc (일정 탭 UI 추가)
 });

@@ -93,11 +93,22 @@ npm run preview
 ```env
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_LOCALIZATION_MODEL=gpt-5-nano
+<<<<<<< HEAD
 PORT=3001
 ```
 
 - `OPENAI_API_KEY`: 서버에서 OpenAI API를 호출할 때 사용합니다.
 - `OPENAI_LOCALIZATION_MODEL`: 현지화 API에서 사용할 모델입니다. 설정하지 않으면 `gpt-5-nano`를 사용합니다.
+=======
+OPENAI_HANDOFF_MODEL=gpt-5.4
+PORT=3001
+```
+
+- `OPENAI_API_KEY`: Border 02(언어) 현지화 API에서 사용합니다.
+- `OPENAI_LOCALIZATION_MODEL`: 현지화 API에서 사용할 모델입니다. 설정하지 않으면 `gpt-5-nano`를 사용합니다.
+- `OPENAI_HANDOFF_MODEL`: Border 04(조직) 인수인계 브리핑 생성에 쓸 모델입니다. 설정하지 않으면 `gpt-5.4` 를 사용합니다. (변경점 감지 정확도 때문에 상위 모델을 씁니다)
+- Border 04 는 `OPENAI_API_KEY` 가 없으면 규칙 기반 데모 모드로 동작합니다 (서버가 죽지는 않습니다).
+>>>>>>> 7204bbc (일정 탭 UI 추가)
 - `PORT`: Express 서버 포트입니다. 설정하지 않으면 `3001`을 사용합니다.
 
 API key는 클라이언트 코드나 `VITE_` 환경변수에 넣지 않습니다. 현재 클라이언트는 `/api/localize`만 호출하고, OpenAI API는 `server/index.js`에서만 호출합니다.

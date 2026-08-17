@@ -3,3 +3,9 @@ dist/
 .env
 .env.*
 !.env.example
+<<<<<<< HEAD
+=======
+
+# Border 04 이 저장하는 직전 브리핑 (변경점 계산용)
+/data/
+>>>>>>> 7204bbc (일정 탭 UI 추가)

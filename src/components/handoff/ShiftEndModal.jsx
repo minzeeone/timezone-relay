@@ -192,6 +192,40 @@ function LocalizationHint({ children, note }) {
   );
 }
 
+<<<<<<< HEAD
+=======
+const TASK_STATE_LABEL = {
+  in_progress: '진행중',
+  todo: '예정',
+  blocked: '막힘',
+};
+
+/**
+ * Border 04 API 응답을 검토 화면의 항목 형태로 변환합니다.
+ * 확정된 결정사항이 먼저 오고, 그 뒤에 남은 작업이 붙습니다.
+ */
+function buildReviewTasks(briefing) {
+  const decisions = (briefing.decisions ?? []).map((decision) => ({
+    state: '완료',
+    title: decision.content,
+    description: decision.detail || '',
+    done: true,
+  }));
+
+  const tasks = (briefing.tasks ?? []).map((task) => ({
+    state: TASK_STATE_LABEL[task.status] ?? '진행중',
+    title: task.content,
+    description: task.owner ? `담당 ${task.owner}` : '',
+    done: false,
+  }));
+
+  return [...decisions, ...tasks].map((item, index) => ({
+    ...item,
+    number: String(index + 1).padStart(2, '0'),
+  }));
+}
+
+>>>>>>> 7204bbc (일정 탭 UI 추가)
 function projectNameFromSelection(selectedProject, projects) {
   if (!selectedProject) return projects[0] ?? 'Project Aurora';
   return selectedProject.replace(/-\d+$/, '');
@@ -211,6 +245,11 @@ export function ShiftEndModal({
   onBack,
   onNext,
   onAdditionalNoteChange,
+<<<<<<< HEAD
+=======
+  briefing = null,
+  briefingError = '',
+>>>>>>> 7204bbc (일정 탭 UI 추가)
 }) {
   const isRecipientStep = step === 'recipient';
   const isProjectStep = step === 'project';
@@ -230,8 +269,24 @@ export function ShiftEndModal({
   const [isJapaneseReview, setIsJapaneseReview] = useState(false);
   const generationStepIndex = Math.min(generationPhase, generationSteps.length - 1);
   const activeGenerationStep = generationSteps[generationStepIndex];
+<<<<<<< HEAD
   const isGenerationComplete = isGeneratingStep && generationPhase >= generationSteps.length;
   const reviewTasks = isJapaneseReview ? handoffReviewTasksJa : handoffReviewTasks;
+=======
+  // Border 04: 애니메이션이 끝나도 실제 AI 응답이 도착할 때까지 "생성 중" 상태를 유지합니다.
+  const isBriefingSettled = Boolean(briefing) || Boolean(briefingError);
+  const isGenerationComplete =
+    isGeneratingStep && generationPhase >= generationSteps.length && isBriefingSettled;
+
+  // 실제 브리핑이 오면 목업 대신 그 결과로 검토 화면을 채웁니다.
+  const liveReviewTasks = briefing ? buildReviewTasks(briefing) : null;
+  const reviewTasks =
+    liveReviewTasks && !isJapaneseReview
+      ? liveReviewTasks
+      : isJapaneseReview
+        ? handoffReviewTasksJa
+        : handoffReviewTasks;
+>>>>>>> 7204bbc (일정 탭 UI 추가)
   const reviewStatuses = isJapaneseReview ? handoffReviewStatusesJa : handoffReviewStatuses;
   const reviewPriorities = isJapaneseReview ? handoffReviewPrioritiesJa : handoffReviewPriorities;
 
@@ -583,13 +638,27 @@ export function ShiftEndModal({
               <div className="handoff-review-column">
                 <section className="handoff-review-section">
                   <h3>인수인계 업무</h3>
+<<<<<<< HEAD
                   <p className="handoff-review-lead">AURORA 인증 시스템 개편</p>
                   <p>글로벌 사용자 인증 시스템을 기존 방식에서 OAuth 기반 인증 구조로 전환하는 프로젝트입니다.</p>
+=======
+                  <p className="handoff-review-lead">
+                    {briefing ? `${reviewProjectName} 인수인계 요약` : 'AURORA 인증 시스템 개편'}
+                  </p>
+                  <p>
+                    {briefing?.summary ??
+                      '글로벌 사용자 인증 시스템을 기존 방식에서 OAuth 기반 인증 구조로 전환하는 프로젝트입니다.'}
+                  </p>
+>>>>>>> 7204bbc (일정 탭 UI 추가)
                 </section>
                 <section className="handoff-review-section">
                   <h3>담당 업무</h3>
                   <div className="handoff-review-task-list">
+<<<<<<< HEAD
                     {handoffReviewTasks.map((task) => (
+=======
+                    {reviewTasks.map((task) => (
+>>>>>>> 7204bbc (일정 탭 UI 추가)
                       <article className={task.done ? 'done' : ''} key={task.number}>
                         <span>{task.state}</span>
                         <div>
