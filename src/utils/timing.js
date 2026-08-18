@@ -17,6 +17,7 @@ export const COUNTRY_DB = {
   DE: { name: '독일', zone: 'Europe/Berlin', holidays: ['10-03', '12-25', '01-01'] },
   JP: { name: '일본', zone: 'Asia/Tokyo', holidays: ['01-01', '05-03', '11-03'] },
   SG: { name: '싱가포르', zone: 'Asia/Singapore', holidays: ['08-09', '12-25', '01-01'] },
+  RU: { name: '러시아', zone: 'Europe/Moscow', holidays: ['01-01', '05-09', '06-12'] },
 };
 
 /**

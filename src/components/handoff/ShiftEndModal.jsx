@@ -351,6 +351,17 @@ export function ShiftEndModal({
     return () => window.clearInterval(counter);
   }, [activeGenerationStep, isGenerationComplete, isGeneratingStep]);
 
+  // ESC 로도 닫을 수 있게 합니다. 생성·전송 중에는 끊기면 안 되므로 무시합니다.
+  useEffect(() => {
+    if (isGeneratingStep || isSendingStep || isSentStep) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isGeneratingStep, isSendingStep, isSentStep, onClose]);
+
   const canContinue = isAdditionalStep || isGeneratingStep
     ? true
     : isPreparingStep
@@ -368,7 +379,10 @@ export function ShiftEndModal({
         aria-labelledby="shift-modal-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        {!isGeneratingStep && !isReviewStep && !isSendingStep && !isSentStep && (
+        {/* 생성·전송 중에는 중간에 끊기면 안 되니 닫기를 막고,
+            결과(인수인계서)는 다시 볼 수 있어야 하므로 닫기를 열어둡니다.
+            바깥 클릭으로는 닫히지 않고(위 onMouseDown), 이 버튼으로만 닫습니다. */}
+        {!isGeneratingStep && !isSendingStep && !isSentStep && (
           <button className="shift-modal-close" type="button" aria-label="닫기" onClick={onClose}>
             <i className="bi bi-x-lg" />
           </button>

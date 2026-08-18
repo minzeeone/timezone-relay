@@ -391,6 +391,12 @@ function App() {
   const isScheduleView = activeView === 'schedule';
   const isDashboardView = activeView === 'dashboard';
 
+  // 헤더 날짜는 고정값이 아니라 오늘 날짜로 표시합니다.
+  const todayLabel = useMemo(
+    () => new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date()),
+    [],
+  );
+
   const filteredContacts = useMemo(() => {
     return contacts.filter((contact) => {
       const matchesQuery = `${contact.name} ${contact.message}`.toLowerCase().includes(query.toLowerCase());
@@ -955,7 +961,7 @@ function App() {
             </div>
           )}
           <div className="top-actions">
-            {!isMessengerView && <span className="dashboard-date">2026년 8월 13일</span>}
+            {!isMessengerView && <span className="dashboard-date">{todayLabel}</span>}
             <button className="notification-button" type="button" aria-label="알림">
               <i className="bi bi-bell" />
               <span />
