@@ -16,6 +16,7 @@ export interface TimelineMember {
   };
 
   schedule: {
+    date: string;
     startTime: string;
     endTime: string;
     timezone: string;

@@ -28,6 +28,7 @@
     avatarLabel: 'AL',
   },
   schedule: {
+    date: '2026-08-18',
     startTime: '18:00',
     endTime: '01:00',
     timezone: 'America/Los_Angeles',
@@ -55,6 +56,7 @@
 - `profile.countryCode`: `KR`, `US`, `JP`, `GB` 같은 국가 코드
 - `profile.avatar`: 이미지 경로
 - `profile.avatarLabel`: 이미지가 없을 때 표시할 이니셜
+- `schedule.date`: 근무 날짜, `YYYY-MM-DD` 형식
 - `schedule.startTime`: 근무 시작 시간
 - `schedule.endTime`: 근무 종료 시간
 - `schedule.timezone`: 팀원의 타임존
@@ -90,6 +92,8 @@ React Flow edge는 `handoff.targetId`를 기준으로 자동 생성됩니다.
 위처럼 설정하면 `kim -> alex` 연결선이 자동으로 만들어집니다.
 
 ## 시간과 위치 계산
+
+블록은 현재 선택된 날짜와 `schedule.date`가 일치할 때만 표시됩니다.
 
 블록의 x 위치와 width는 `startTime`, `endTime`을 기준으로 계산됩니다.
 

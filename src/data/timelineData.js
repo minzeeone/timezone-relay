@@ -28,6 +28,7 @@ export const timelineMembers = [
       avatarLabel: '김',
     },
     schedule: {
+      date: '2026-08-18',
       startTime: '08:30',
       endTime: '17:30',
       timezone: 'Asia/Seoul',
@@ -58,6 +59,7 @@ export const timelineMembers = [
       avatarLabel: 'AL',
     },
     schedule: {
+      date: '2026-08-18',
       startTime: '19:00',
       endTime: '03:00',
       timezone: 'America/Los_Angeles',
@@ -84,6 +86,7 @@ export const timelineMembers = [
       avatar: waguriKaorukoAvatar,
     },
     schedule: {
+      date: '2026-08-18',
       startTime: '10:00',
       endTime: '19:00',
       timezone: 'Asia/Tokyo',
@@ -114,6 +117,7 @@ export const timelineMembers = [
       avatarLabel: 'OL',
     },
     schedule: {
+      date: '2026-08-19',
       startTime: '14:00',
       endTime: '22:00',
       timezone: 'Europe/London',
