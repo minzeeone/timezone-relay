@@ -3,6 +3,7 @@ import { BaseEdge, Handle, MarkerType, Position, ReactFlow } from '@xyflow/react
 import '@xyflow/react/dist/style.css';
 import { timelineProjects } from '../../data/projectData.js';
 import { timelineMembers, timelineTeams } from '../../data/timelineData.js';
+import { analyzeTiming, toTimelineStatus } from '../../utils/timing.js';
 import { useTimelineRangeDrag } from '../../hooks/useTimelineRangeDrag.js';
 import { getCountryFlagClass } from '../../utils/country.js';
 import { calculateTimelineMemberMetrics } from '../../utils/timelinePosition.js';
@@ -121,7 +122,11 @@ function ShiftNode({ data }) {
   const flagPlacement = member.layout.flagPlacement ?? 'none';
   const flagClass = getCountryFlagClass(member.profile.countryCode);
   const statusLabel = statusLabels[member.status] ?? '근무';
-  const detail = `${statusLabel} (${member.schedule.startTime} - ${member.schedule.endTime})`;
+  // Border 01: 현지 시각이 있으면 함께 보여줍니다 (준서님 타임존 계산 결과).
+  const localClock = member.timing ? member.timing.localTime.slice(11) : null;
+  const detail = localClock
+    ? `${statusLabel} · 현지 ${localClock}`
+    : `${statusLabel} (${member.schedule.startTime} - ${member.schedule.endTime})`;
   const avatar = {
     side: avatarSide,
     src: member.profile.avatar,
@@ -174,6 +179,8 @@ const edgeTypes = {
 export function TeamSchedule() {
   const [collapsedFilters, setCollapsedFilters] = useState({ teams: false, projects: false });
   const [selectedDate, setSelectedDate] = useState(() => new Date(BASE_SCHEDULE_DATE));
+  // 현재 시각. 1분마다 갱신해서 팀원 상태(근무중/퇴근/공휴일)가 실제로 흐르게 합니다.
+  const [nowTick, setNowTick] = useState(() => new Date());
   const timelineRef = useRef(null);
   const hasSetInitialTimelineScrollRef = useRef(false);
   const visibleScrollCenterHourRef = useRef(TIMELINE_FOCUS_START_HOUR + TIMELINE_INITIAL_VISIBLE_HOURS / 2);
@@ -284,10 +291,23 @@ export function TeamSchedule() {
     () => createTimelineTicks(TIMELINE_DAY_START_HOUR, TIMELINE_DAY_END_HOUR, visibleHours),
     [visibleHours]
   );
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowTick(new Date()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
+  // Border 01(지리) — 준서님 타임존 계산으로 각 멤버의 현재 상태를 실시간 판정합니다.
+  // 하드코딩된 status 대신 현지 시각·공휴일·업무시간을 보고 결정합니다.
   const activeTimelineMembers = useMemo(
-    () => timelineMembers.filter((member) => member.schedule.date === selectedDateKey),
-    [selectedDateKey]
+    () =>
+      timelineMembers
+        .filter((member) => member.schedule.date === selectedDateKey)
+        .map((member) => {
+          const timing = analyzeTiming(member.profile.countryCode, nowTick);
+          return { ...member, status: toTimelineStatus(timing), timing };
+        }),
+    [selectedDateKey, nowTick]
   );
 
   const flowNodes = useMemo(() => {
