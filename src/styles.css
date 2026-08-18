@@ -7,6 +7,7 @@
 @import "./styles/navigation.css";
 @import "./components/chat/chat.css";
 @import "./components/dashboard/dashboard.css";
+@import "./components/schedule/schedule.css";
 @import "./components/project/project.css";
 @import "./components/handoff/handoff.css";
 @import "./styles/responsive.css";

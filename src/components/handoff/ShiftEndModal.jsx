@@ -192,8 +192,6 @@ function LocalizationHint({ children, note }) {
   );
 }
 
-<<<<<<< HEAD
-=======
 const TASK_STATE_LABEL = {
   in_progress: '진행중',
   todo: '예정',
@@ -225,7 +223,6 @@ function buildReviewTasks(briefing) {
   }));
 }
 
->>>>>>> 7204bbc (일정 탭 UI 추가)
 function projectNameFromSelection(selectedProject, projects) {
   if (!selectedProject) return projects[0] ?? 'Project Aurora';
   return selectedProject.replace(/-\d+$/, '');
@@ -245,11 +242,8 @@ export function ShiftEndModal({
   onBack,
   onNext,
   onAdditionalNoteChange,
-<<<<<<< HEAD
-=======
   briefing = null,
   briefingError = '',
->>>>>>> 7204bbc (일정 탭 UI 추가)
 }) {
   const isRecipientStep = step === 'recipient';
   const isProjectStep = step === 'project';
@@ -269,10 +263,6 @@ export function ShiftEndModal({
   const [isJapaneseReview, setIsJapaneseReview] = useState(false);
   const generationStepIndex = Math.min(generationPhase, generationSteps.length - 1);
   const activeGenerationStep = generationSteps[generationStepIndex];
-<<<<<<< HEAD
-  const isGenerationComplete = isGeneratingStep && generationPhase >= generationSteps.length;
-  const reviewTasks = isJapaneseReview ? handoffReviewTasksJa : handoffReviewTasks;
-=======
   // Border 04: 애니메이션이 끝나도 실제 AI 응답이 도착할 때까지 "생성 중" 상태를 유지합니다.
   const isBriefingSettled = Boolean(briefing) || Boolean(briefingError);
   const isGenerationComplete =
@@ -286,7 +276,6 @@ export function ShiftEndModal({
       : isJapaneseReview
         ? handoffReviewTasksJa
         : handoffReviewTasks;
->>>>>>> 7204bbc (일정 탭 UI 추가)
   const reviewStatuses = isJapaneseReview ? handoffReviewStatusesJa : handoffReviewStatuses;
   const reviewPriorities = isJapaneseReview ? handoffReviewPrioritiesJa : handoffReviewPriorities;
 
@@ -638,10 +627,6 @@ export function ShiftEndModal({
               <div className="handoff-review-column">
                 <section className="handoff-review-section">
                   <h3>인수인계 업무</h3>
-<<<<<<< HEAD
-                  <p className="handoff-review-lead">AURORA 인증 시스템 개편</p>
-                  <p>글로벌 사용자 인증 시스템을 기존 방식에서 OAuth 기반 인증 구조로 전환하는 프로젝트입니다.</p>
-=======
                   <p className="handoff-review-lead">
                     {briefing ? `${reviewProjectName} 인수인계 요약` : 'AURORA 인증 시스템 개편'}
                   </p>
@@ -649,16 +634,11 @@ export function ShiftEndModal({
                     {briefing?.summary ??
                       '글로벌 사용자 인증 시스템을 기존 방식에서 OAuth 기반 인증 구조로 전환하는 프로젝트입니다.'}
                   </p>
->>>>>>> 7204bbc (일정 탭 UI 추가)
                 </section>
                 <section className="handoff-review-section">
                   <h3>담당 업무</h3>
                   <div className="handoff-review-task-list">
-<<<<<<< HEAD
-                    {handoffReviewTasks.map((task) => (
-=======
                     {reviewTasks.map((task) => (
->>>>>>> 7204bbc (일정 탭 UI 추가)
                       <article className={task.done ? 'done' : ''} key={task.number}>
                         <span>{task.state}</span>
                         <div>

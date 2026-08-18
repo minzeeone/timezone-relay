@@ -4,11 +4,34 @@ import { Avatar } from './components/Avatar.jsx';
 import { HandoffDashboard } from './components/dashboard/HandoffDashboard.jsx';
 import { ShiftEndModal } from './components/handoff/ShiftEndModal.jsx';
 import { ProfilePanel } from './components/ProfilePanel.jsx';
+import { TeamSchedule } from './components/schedule/TeamSchedule.jsx';
 import { contactsSeed, contactProfiles, emptyTermForm, initialMessages, languageMap, localizationGlossary } from './data/chatMock.js';
 import { handoffDashboardMock } from './data/handoffMock.js';
 import { handoffProjects, handoffRecipients } from './data/handoffFlowMock.js';
 import { findAcronymsInLines, mergeAcronyms } from './utils/acronyms.js';
 import { isClusteredMessage, shouldShowMessageTime } from './utils/messageGrouping.js';
+
+const viewFromLocation = () => {
+  if (typeof window === 'undefined') return 'dashboard';
+
+  const hash = window.location.hash.toLowerCase();
+  const path = window.location.pathname.toLowerCase();
+
+  if (hash === '#schedule' || hash === '#/schedule' || hash === '#scadule' || hash === '#/scadule' || path === '/schedule' || path === '/scadule') {
+    return 'schedule';
+  }
+
+  if (hash === '#messenger' || hash === '#/messenger' || path === '/messenger') {
+    return 'messenger';
+  }
+
+  return 'dashboard';
+};
+
+const replaceHash = (hash) => {
+  if (typeof window === 'undefined') return;
+  window.history.replaceState(null, '', hash);
+};
 
 const createJapaneseLocalVersion = (original = '', localizedText = '') => {
   const source = `${original} ${localizedText}`.toLowerCase();
@@ -350,24 +373,23 @@ function App() {
   const [termPanelOpen, setTermPanelOpen] = useState(false);
   const [termListOpen, setTermListOpen] = useState(false);
   const [editingAcronym, setEditingAcronym] = useState('');
-  const [activeView, setActiveView] = useState('dashboard');
+  const [activeView, setActiveView] = useState(viewFromLocation);
   const [profileOpen, setProfileOpen] = useState(false);
   const [shiftEndOpen, setShiftEndOpen] = useState(false);
   const [shiftModalStep, setShiftModalStep] = useState('confirm');
   const [selectedHandoffRecipient, setSelectedHandoffRecipient] = useState('');
   const [selectedHandoffProject, setSelectedHandoffProject] = useState('');
-<<<<<<< HEAD
-=======
   // Border 04 (조직) — 실제 AI 인수인계 브리핑 결과
   const [handoffBriefing, setHandoffBriefing] = useState(null);
   const [handoffBriefingError, setHandoffBriefingError] = useState('');
->>>>>>> 7204bbc (일정 탭 UI 추가)
   const [termForm, setTermForm] = useState(emptyTermForm);
   const conversationEndRef = useRef(null);
 
   const selectedContact = contacts.find((contact) => contact.id === selectedId) ?? contacts[0];
   const selectedProfile = contactProfiles[selectedContact.id] ?? contactProfiles.default;
   const isMessengerView = activeView === 'messenger';
+  const isScheduleView = activeView === 'schedule';
+  const isDashboardView = activeView === 'dashboard';
 
   const filteredContacts = useMemo(() => {
     return contacts.filter((contact) => {
@@ -413,6 +435,15 @@ function App() {
       return Math.max(0, page - 1);
     });
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const syncViewFromLocation = () => setActiveView(viewFromLocation());
+    window.addEventListener('hashchange', syncViewFromLocation);
+
+    return () => window.removeEventListener('hashchange', syncViewFromLocation);
+  }, []);
 
   useEffect(() => {
     conversationEndRef.current?.scrollIntoView({
@@ -622,12 +653,21 @@ function App() {
 
   const openDashboard = () => {
     setActiveView('dashboard');
+    replaceHash('#dashboard');
     setProfileOpen(false);
     setChatOpen(false);
   };
 
   const openMessenger = () => {
     setActiveView('messenger');
+    replaceHash('#messenger');
+  };
+
+  const openSchedule = () => {
+    setActiveView('schedule');
+    replaceHash('#schedule');
+    setProfileOpen(false);
+    setChatOpen(false);
   };
 
   const closeShiftEndModal = () => {
@@ -636,8 +676,6 @@ function App() {
     setSelectedHandoffRecipient('');
     setSelectedHandoffProject('');
     setHandoffAdditionalNote('');
-<<<<<<< HEAD
-=======
     setHandoffBriefing(null);
     setHandoffBriefingError('');
   };
@@ -675,7 +713,6 @@ function App() {
     } catch (error) {
       setHandoffBriefingError(error.message);
     }
->>>>>>> 7204bbc (일정 탭 UI 추가)
   };
 
   const deliverHandoffToMessenger = () => {
@@ -899,11 +936,13 @@ function App() {
           </section>
         </div>
       )}
-      <section className={`apex-window ${isMessengerView ? 'view-messenger' : 'view-dashboard'} ${chatOpen ? 'mobile-chat-open' : ''} ${isMessengerView && profileOpen ? 'profile-open' : ''}`}>
+      <section className={`apex-window ${isMessengerView ? 'view-messenger' : isScheduleView ? 'view-schedule' : 'view-dashboard'} ${chatOpen ? 'mobile-chat-open' : ''} ${isMessengerView && profileOpen ? 'profile-open' : ''}`}>
         <header className="topbar">
           <h1>APEX</h1>
           {isMessengerView ? (
             <h2>채팅</h2>
+          ) : isScheduleView ? (
+            <h2>팀 일정</h2>
           ) : (
             <div className="dashboard-org">
               <span>
@@ -940,13 +979,13 @@ function App() {
         )}
 
         <nav className="sidebar" aria-label="주요 메뉴">
-          <button className={!isMessengerView ? 'selected' : ''} type="button" onClick={openDashboard} aria-label="인수인계 대시보드">
+          <button className={isDashboardView ? 'selected' : ''} type="button" onClick={openDashboard} aria-label="인수인계 대시보드">
             <i className="bi bi-grid" />
           </button>
           <button className={isMessengerView ? 'selected' : ''} type="button" onClick={openMessenger} aria-label="채팅">
             <i className="bi bi-chat" />
           </button>
-          <button type="button" aria-label="캘린더">
+          <button className={isScheduleView ? 'selected' : ''} type="button" onClick={openSchedule} aria-label="팀 일정">
             <i className="bi bi-calendar3" />
           </button>
           <button type="button" aria-label="설정">
@@ -954,7 +993,8 @@ function App() {
           </button>
         </nav>
 
-        {!isMessengerView && <HandoffDashboard data={handoffDashboardMock} onOpenMessenger={openMessenger} onOpenShiftEnd={() => setShiftEndOpen(true)} />}
+        {isDashboardView && <HandoffDashboard data={handoffDashboardMock} onOpenMessenger={openMessenger} onOpenShiftEnd={() => setShiftEndOpen(true)} />}
+        {isScheduleView && <TeamSchedule />}
 
         {isMessengerView && (
           <>
@@ -1324,11 +1364,8 @@ function App() {
             projects={handoffProjects}
             selectedRecipient={selectedHandoffRecipient}
             selectedProject={selectedHandoffProject}
-<<<<<<< HEAD
-=======
             briefing={handoffBriefing}
             briefingError={handoffBriefingError}
->>>>>>> 7204bbc (일정 탭 UI 추가)
             onSelectRecipient={setSelectedHandoffRecipient}
             onSelectProject={setSelectedHandoffProject}
             onAdditionalNoteChange={setHandoffAdditionalNote}
@@ -1379,10 +1416,7 @@ function App() {
               }
               if (shiftModalStep === 'additional') {
                 setShiftModalStep('generating');
-<<<<<<< HEAD
-=======
                 generateHandoffBriefing();
->>>>>>> 7204bbc (일정 탭 UI 추가)
                 return;
               }
               if (shiftModalStep === 'generating') {

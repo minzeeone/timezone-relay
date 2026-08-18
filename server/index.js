@@ -3,13 +3,10 @@ import express from 'express';
 import OpenAI from 'openai';
 import { fileURLToPath } from 'node:url';
 
-<<<<<<< HEAD
-=======
 import { run as runBorder03 } from './borders/border03-culture.js';
 import { run as runBorder04 } from './borders/border04-org.js';
 import { collectProjectLogs } from './data/projectLogs.js';
 
->>>>>>> 7204bbc (일정 탭 UI 추가)
 dotenv.config({
   path: fileURLToPath(new URL('../.env', import.meta.url)),
 });
@@ -285,8 +282,6 @@ app.post('/api/localize', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-=======
 /**
  * Border 04 (조직) — 인수인계 브리핑 생성.
  *
@@ -337,7 +332,6 @@ app.post('/api/culture/analyze', async (req, res) => {
   }
 });
 
->>>>>>> 7204bbc (일정 탭 UI 추가)
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && 'body' in err) {
     res.status(400).json({ error: 'Request body must be valid JSON.' });
@@ -348,12 +342,8 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-<<<<<<< HEAD
-  console.log(`APEX localization server listening on http://127.0.0.1:${PORT}`);
-=======
   console.log(`APEX server listening on http://127.0.0.1:${PORT}`);
   console.log(`  Border 02 언어  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '키 없음 (오류 반환)'}`);
   console.log(`  Border 03 문화  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '데모 모드'}`);
   console.log(`  Border 04 조직  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '데모 모드'}`);
->>>>>>> 7204bbc (일정 탭 UI 추가)
 });
