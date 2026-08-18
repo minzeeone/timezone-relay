@@ -761,7 +761,29 @@
 .shift-modal-content.handoff-review {
   align-content: start;
   justify-items: stretch;
-  overflow: hidden;
+  max-height: calc(100vh - 136px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 8px;
+  margin-right: -8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 119, 69, 0.72) rgba(255, 255, 255, 0.06);
+}
+
+.shift-modal-content.handoff-review::-webkit-scrollbar {
+  width: 8px;
+}
+
+.shift-modal-content.handoff-review::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.shift-modal-content.handoff-review::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 119, 69, 0.36), rgba(255, 119, 69, 0.82));
+  box-shadow: 0 0 12px rgba(255, 119, 69, 0.16);
 }
 
 .handoff-review.translated-review > .handoff-review-header,
@@ -777,7 +799,7 @@
 }
 
 .handoff-review.translated-review {
-  overflow: visible;
+  overflow-y: auto;
 }
 
 .localized-hint {
@@ -1426,7 +1448,7 @@
 
 .handoff-review-task-list {
   display: grid;
-  gap: 0;
+  gap: 18px;
   margin-top: 4px;
 }
 
@@ -1435,7 +1457,7 @@
   position: relative;
   display: grid;
   grid-template-columns: 64px 1fr;
-  min-height: 102px;
+  min-height: 106px;
   color: #fff;
   animation: dashboardFadeLift 360ms var(--ease-out) both;
 }
@@ -1459,7 +1481,7 @@
 .handoff-review-task-list article::before {
   position: absolute;
   top: 15px;
-  bottom: -28px;
+  bottom: -46px;
   left: var(--task-line-x);
   width: 2px;
   content: '';
@@ -1503,7 +1525,7 @@
 .handoff-review-task-list article div {
   display: grid;
   align-content: start;
-  gap: 4px;
+  gap: 7px;
 }
 
 .handoff-review-task-list strong {
@@ -1523,7 +1545,7 @@
   color: #eee6e8;
   font-size: 13px;
   font-weight: 420;
-  line-height: 1.35;
+  line-height: 1.45;
 }
 
 .handoff-review-status-list {
@@ -2225,6 +2247,12 @@
     padding: 28px 22px 30px;
   }
 
+  .shift-modal-content.handoff-review {
+    max-height: calc(100vh - 118px);
+    padding-right: 6px;
+    margin-right: -6px;
+  }
+
   .shift-modal-icon {
     width: 62px;
     height: 62px;
@@ -2390,6 +2418,10 @@
     grid-template-columns: 1fr;
     gap: 26px;
     margin-top: 38px;
+  }
+
+  .handoff-review-task-list {
+    gap: 16px;
   }
 
   .handoff-review-column {

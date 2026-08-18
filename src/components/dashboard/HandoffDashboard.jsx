@@ -1,6 +1,31 @@
+import { useEffect, useState } from 'react';
 import { activeHandoffs, handoffRecipients } from '../../data/handoffFlowMock.js';
+import { presenceOf } from '../../utils/timing.js';
+
+// 회의중 / 자리비움은 캘린더에서 오는 상태라 타임존으로는 알 수 없어 고정합니다.
+// 근무중 / 근무종료는 현지 업무시간이 정해야 하므로 여기에 넣지 않습니다.
+// (넣으면 도쿄가 밤 10시인데 '근무중'으로 뜹니다)
+const fixedStatusLabels = {
+  busy: '회의중',
+  away: '자리비움',
+};
+
+const formatMemberMeta = (member) => {
+  const timing = presenceOf(member.countryCode ?? 'KR', fixedStatusLabels[member.status]);
+  return `${timing.state} - ${timing.clock} ${member.cityLabel ?? timing.country}`;
+};
 
 export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
+  const [, setLocalTimeTick] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setLocalTimeTick((tick) => tick + 1);
+    }, 30000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <section className="handoff-dashboard" aria-label="AI 업무 인수인계 대시보드">
       <section className="wire-hero">
@@ -104,7 +129,7 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
               </div>
               <div>
                 <strong>{member.name}</strong>
-                <small>{member.meta}</small>
+                <small>{formatMemberMeta(member)}</small>
               </div>
               <button type="button" aria-label={`${member.name}에게 전화`}>
                 <i className="bi bi-telephone" />

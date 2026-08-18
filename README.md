@@ -1,4 +1,15 @@
-# Timezone Relay - Border 2 언어파트 및 UX
+# Timezone Relay
+
+![banner.png](src/assets/logo_banner.png)
+
+## 오늘 변경사항 요약
+
+- 대시보드 상단 로고를 텍스트 `APEX`에서 `src/assets/TR_Logo.png` 이미지로 교체했습니다.
+- 일정 탭의 타임라인을 데이터 기반 렌더링 구조로 정리했습니다.
+- 타임라인 블록 데이터에 `schedule.date`를 추가해 선택한 날짜와 연결되도록 했습니다.
+- React Flow 연결선을 노드 위치와 크기 기반으로 계산하도록 개선하고, 우회선은 직각으로 연결되도록 정리했습니다.
+- 인수인계서의 인수자/인계자 현지 시간 표시를 `timing.js` 결과 기반으로 연결했습니다.
+- 인수인계서의 추진계획 및 우선순위 섹션을 `briefing.tasks` 기반으로 정렬해 표시하도록 변경했습니다.
 
 ## 블록 데이터 사용 방법
 
@@ -6,7 +17,7 @@
 
 주로 수정할 파일:
 
-- `src/data/timelineData.js`: 팀원, 근무 시간, 블록 색상, 위치, 인수인계 연결 관계
+- `src/data/timelineData.js`: 팀원, 근무 날짜, 근무 시간, 블록 색상, 위치, 인수인계 연결 관계
 - `src/data/projectData.js`: 프로젝트 목록과 색상
 - `src/utils/timelinePosition.js`: 시간 기반 위치 계산 로직
 - `src/types/timeline.ts`: Timeline 데이터 타입 정의
@@ -95,6 +106,27 @@ React Flow edge는 `handoff.targetId`를 기준으로 자동 생성됩니다.
 
 블록은 현재 선택된 날짜와 `schedule.date`가 일치할 때만 표시됩니다.
 
+## 날짜 데이터 연결
+
+각 블록에는 반드시 `schedule.date`가 들어갑니다.
+
+```js
+schedule: {
+  date: '2026-08-18',
+  startTime: '18:00',
+  endTime: '01:00',
+  timezone: 'America/Los_Angeles',
+}
+```
+
+일정 화면의 이전/다음 날짜 버튼이나 달력 날짜를 누르면 선택 날짜가 바뀌고, 선택 날짜와 `schedule.date`가 같은 블록만 타임라인에 표시됩니다.
+
+예:
+
+- 선택 날짜가 `2026-08-18`이면 `schedule.date: '2026-08-18'`인 블록만 표시
+- 선택 날짜가 `2026-08-19`이면 `schedule.date: '2026-08-19'`인 블록만 표시
+- 해당 날짜의 블록이 없으면 빈 상태 메시지를 표시
+
 블록의 x 위치와 width는 `startTime`, `endTime`을 기준으로 계산됩니다.
 
 - `09:00 -> 18:00`: 같은 날 근무
@@ -127,6 +159,7 @@ y = TIMELINE_ROW_TOP + row * TIMELINE_ROW_HEIGHT + yOffset
 ## 오늘 변경점
 
 - 일정 화면의 근무 블록 데이터를 `src/data/timelineData.js`로 분리했습니다.
+- 블록 데이터에 `schedule.date`를 추가해 날짜별 타임라인 렌더링이 가능하게 했습니다.
 - 프로젝트 필터 데이터를 `src/data/projectData.js`로 분리했습니다.
 - `TimelineMember`, `Project` TypeScript 타입을 추가했습니다.
 - 시간 기반 위치 계산 유틸 `src/utils/timelinePosition.js`를 추가했습니다.

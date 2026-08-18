@@ -344,20 +344,59 @@
   transform: translateY(-1px);
 }
 
+.schedule-timeline-shell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.schedule-timeline-shell::before,
+.schedule-timeline-shell::after {
+  position: absolute;
+  top: 8px;
+  bottom: 44px;
+  z-index: 14;
+  width: clamp(28px, 3.5vw, 54px);
+  background:
+    radial-gradient(circle at 42% 82%, rgba(255, 112, 68, 0.12), transparent 46%),
+    linear-gradient(180deg, rgba(6, 6, 7, 0.72) 0%, rgba(10, 8, 8, 0.62) 52%, rgba(62, 25, 16, 0.64) 100%);
+  pointer-events: none;
+  content: "";
+}
+
+.schedule-timeline-shell::before {
+  left: 0;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0.64) 34%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0.64) 34%, transparent 100%);
+}
+
+.schedule-timeline-shell::after {
+  right: 0;
+  -webkit-mask-image: linear-gradient(270deg, #000 0%, rgba(0, 0, 0, 0.64) 34%, transparent 100%);
+  mask-image: linear-gradient(270deg, #000 0%, rgba(0, 0, 0, 0.64) 34%, transparent 100%);
+}
+
 .schedule-timeline {
   position: relative;
   min-width: 0;
   min-height: 0;
+  height: calc(100% + 18px);
   margin-top: -18px;
   padding-top: 26px;
-  padding-bottom: 14px;
+  padding-bottom: 34px;
+  box-sizing: border-box;
   overflow-x: auto;
   overflow-y: auto;
   cursor: ew-resize;
   overscroll-behavior: contain;
   touch-action: pan-y;
   user-select: none;
+  scroll-padding-bottom: 34px;
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
   scrollbar-color: rgba(255, 119, 72, 0.7) rgba(255, 255, 255, 0.06);
   scrollbar-width: thin;
 }
@@ -666,7 +705,7 @@
 }
 
 .timeline-flow .react-flow__edges {
-  z-index: 6;
+  z-index: 3;
 }
 
 .timeline-flow .react-flow__nodes {
@@ -681,7 +720,7 @@
 
 .timeline-flow .schedule-handoff-edge {
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
-  z-index: 8;
+  z-index: 3;
 }
 
 .timeline-flow .react-flow__edge-path {

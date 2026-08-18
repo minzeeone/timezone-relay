@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { presenceOf } from '../../utils/timing.js';
 
 const preparationItems = [
   {
@@ -184,6 +185,34 @@ const priorityLocalizationNotesJa = [
   '최종 QA는 일본어에서도 통용되는 기술 약어를 보존했어요.',
 ];
 
+const japaneseCityLabels = {
+  KR: '韓国',
+  JP: '日本 東京',
+  US: '米国 ニューヨーク',
+  GB: '英国 ロンドン',
+  UK: '英国 ロンドン',
+  RU: 'ロシア モスクワ',
+};
+
+function formatReviewLocalTime(countryCode, locationLabel) {
+  const { clock } = presenceOf(countryCode);
+
+  return `${clock} ${locationLabel}`;
+}
+
+// 대시보드(HandoffDashboard)와 같은 규칙입니다.
+// 회의중 / 자리비움만 고정이고, 근무중 / 근무종료는 현지 업무시간이 정합니다.
+const fixedStatusLabels = {
+  busy: '회의중',
+  away: '자리비움',
+};
+
+function formatRecipientMeta(member) {
+  const timing = presenceOf(member.countryCode ?? 'KR', fixedStatusLabels[member.status]);
+
+  return `${timing.state} - ${timing.clock} ${member.cityLabel ?? timing.country}`;
+}
+
 function LocalizationHint({ children, note }) {
   return (
     <span className="localized-hint" data-note={note} tabIndex={0}>
@@ -196,6 +225,12 @@ const TASK_STATE_LABEL = {
   in_progress: '진행중',
   todo: '예정',
   blocked: '막힘',
+};
+
+const TASK_PRIORITY_ORDER = {
+  blocked: 0,
+  in_progress: 1,
+  todo: 2,
 };
 
 /**
@@ -221,6 +256,42 @@ function buildReviewTasks(briefing) {
     ...item,
     number: String(index + 1).padStart(2, '0'),
   }));
+}
+
+function buildReviewStatuses(briefing) {
+  const decisions = (briefing.decisions ?? []).map((decision) => ({
+    state: '완료',
+    title: decision.content,
+    description: decision.detail || decision.source || '',
+    done: true,
+  }));
+
+  const blockers = (briefing.tasks ?? [])
+    .filter((task) => task.status === 'blocked')
+    .map((task) => ({
+      state: '미해결사항',
+      title: task.content,
+      description: task.source ? `출처: ${task.source}` : '',
+      danger: true,
+    }));
+
+  return [...decisions, ...blockers];
+}
+
+function buildReviewPriorities(briefing) {
+  return [...(briefing.tasks ?? [])]
+    .sort((currentTask, nextTask) => {
+      const currentPriority = TASK_PRIORITY_ORDER[currentTask.status] ?? 99;
+      const nextPriority = TASK_PRIORITY_ORDER[nextTask.status] ?? 99;
+
+      return currentPriority - nextPriority;
+    })
+    .map((task) => ({
+      title: task.content,
+      assignee: task.owner || '미정',
+      source: task.source || '',
+      status: task.status,
+    }));
 }
 
 function projectNameFromSelection(selectedProject, projects) {
@@ -261,6 +332,7 @@ export function ShiftEndModal({
   const [generationPhase, setGenerationPhase] = useState(0);
   const [generationCount, setGenerationCount] = useState(0);
   const [isJapaneseReview, setIsJapaneseReview] = useState(false);
+  const [localTimeTick, setLocalTimeTick] = useState(0);
   const generationStepIndex = Math.min(generationPhase, generationSteps.length - 1);
   const activeGenerationStep = generationSteps[generationStepIndex];
   // Border 04: 애니메이션이 끝나도 실제 AI 응답이 도착할 때까지 "생성 중" 상태를 유지합니다.
@@ -270,14 +342,35 @@ export function ShiftEndModal({
 
   // 실제 브리핑이 오면 목업 대신 그 결과로 검토 화면을 채웁니다.
   const liveReviewTasks = briefing ? buildReviewTasks(briefing) : null;
+  const liveReviewStatuses = briefing ? buildReviewStatuses(briefing) : null;
+  const liveReviewPriorities = briefing ? buildReviewPriorities(briefing) : null;
   const reviewTasks =
     liveReviewTasks && !isJapaneseReview
       ? liveReviewTasks
       : isJapaneseReview
         ? handoffReviewTasksJa
         : handoffReviewTasks;
-  const reviewStatuses = isJapaneseReview ? handoffReviewStatusesJa : handoffReviewStatuses;
-  const reviewPriorities = isJapaneseReview ? handoffReviewPrioritiesJa : handoffReviewPriorities;
+  const reviewStatuses =
+    liveReviewStatuses && !isJapaneseReview
+      ? liveReviewStatuses
+      : isJapaneseReview
+        ? handoffReviewStatusesJa
+        : handoffReviewStatuses;
+  const reviewPriorities =
+    liveReviewPriorities && !isJapaneseReview
+      ? liveReviewPriorities
+      : isJapaneseReview
+        ? handoffReviewPrioritiesJa
+        : handoffReviewPriorities;
+  const briefingDecisionCount = briefing?.decisions?.length ?? 0;
+  const briefingBlockedCount = briefing?.tasks?.filter((task) => task.status === 'blocked').length ?? 0;
+  const handoffGiverLocalTime = formatReviewLocalTime('KR', '대한민국');
+  const handoffRecipientLocalTime = formatReviewLocalTime(selectedMember.countryCode ?? 'JP', selectedMember.cityLabel ?? '일본 도쿄');
+  const handoffGiverLocalTimeJa = formatReviewLocalTime('KR', japaneseCityLabels.KR);
+  const handoffRecipientLocalTimeJa = formatReviewLocalTime(
+    selectedMember.countryCode ?? 'JP',
+    japaneseCityLabels[selectedMember.countryCode] ?? selectedMember.cityLabel ?? japaneseCityLabels.JP
+  );
 
   useEffect(() => {
     if (!isPreparingStep) {
@@ -299,7 +392,14 @@ export function ShiftEndModal({
     if (!isReviewStep) {
       setIsJapaneseReview(false);
     }
-  }, [isReviewStep]);
+
+    setLocalTimeTick((tick) => tick + 1);
+    const timer = window.setInterval(() => {
+      setLocalTimeTick((tick) => tick + 1);
+    }, 30000);
+
+    return () => window.clearInterval(timer);
+  }, [isReviewStep, step]);
 
   useEffect(() => {
     if (!isSendingStep) return undefined;
@@ -416,7 +516,7 @@ export function ShiftEndModal({
                   </span>
                   <span>
                     <strong>{member.name}</strong>
-                    <small>{member.meta}</small>
+                    <small>{formatRecipientMeta(member)}</small>
                   </span>
                 </button>
               ))}
@@ -432,7 +532,7 @@ export function ShiftEndModal({
               {selectedMember.avatarImage ? <img src={selectedMember.avatarImage} alt="" /> : <span>{selectedMember.avatar}</span>}
             </div>
             <strong className="project-target-name">{selectedMember.name}</strong>
-            <small className="project-target-meta">{selectedMember.meta}</small>
+            <small className="project-target-meta">{formatRecipientMeta(selectedMember)}</small>
             <h2 id="shift-modal-title">인계할 프로젝트를 선택해주세요.</h2>
             <div className="handoff-project-list" role="listbox" aria-label="인계할 프로젝트">
               {projects.map((project, index) => (
@@ -445,7 +545,7 @@ export function ShiftEndModal({
                   onClick={() => onSelectProject(`${project}-${index}`)}
                 >
                   <span>{project}</span>
-                  {index > 0 && <i className="bi bi-three-dots" />}
+                  <i className="bi bi-three-dots" />
                 </button>
               ))}
             </div>
@@ -524,14 +624,14 @@ export function ShiftEndModal({
                     <span>引き継ぐ人</span>
                     <strong>김의중</strong>
                     <small>開発チーム フロントエンド</small>
-                    <small>13:43 韓国</small>
+                    <small>{handoffGiverLocalTimeJa}</small>
                   </div>
                   <i className="bi bi-arrow-right" aria-hidden="true" />
                   <div>
                     <span>引き継ぎ先</span>
                     <strong>{selectedMember.name}</strong>
                     <small>製品チーム PM</small>
-                    <small>13:43 日本 東京</small>
+                    <small>{handoffRecipientLocalTimeJa}</small>
                   </div>
                 </section>
                 <div className="handoff-review-grid">
@@ -627,14 +727,14 @@ export function ShiftEndModal({
                 <span>인수자</span>
                 <strong>김의중</strong>
                 <small>개발팀 프론트엔드</small>
-                <small>13:43 대한민국</small>
+                <small>{handoffGiverLocalTime}</small>
               </div>
               <i className="bi bi-arrow-right" aria-hidden="true" />
               <div>
                 <span>인계자</span>
                 <strong>{selectedMember.name}</strong>
                 <small>제품팀 PM</small>
-                <small>13:43 일본 도쿄</small>
+                <small>{handoffRecipientLocalTime}</small>
               </div>
             </section>
             <div className="handoff-review-grid">
@@ -645,8 +745,9 @@ export function ShiftEndModal({
                     {briefing ? `${reviewProjectName} 인수인계 요약` : 'AURORA 인증 시스템 개편'}
                   </p>
                   <p>
-                    {briefing?.summary ??
-                      '글로벌 사용자 인증 시스템을 기존 방식에서 OAuth 기반 인증 구조로 전환하는 프로젝트입니다.'}
+                    {briefing
+                      ? `${reviewProjectName}에서 다음 시간대 팀이 이어받아야 할 업무 범위를 정리했습니다.`
+                      : '글로벌 사용자 인증 시스템을 기존 방식에서 OAuth 기반 인증 구조로 전환하는 프로젝트입니다.'}
                   </p>
                 </section>
                 <section className="handoff-review-section">
@@ -668,10 +769,13 @@ export function ShiftEndModal({
               <div className="handoff-review-column">
                 <section className="handoff-review-section">
                   <h3>진행상황 및 미해결사항</h3>
-                  <p>인증 기능 개발과 API 연동은 완료됐으며, Production 배포를 준비하고 있습니다.</p>
+                  <p>
+                    {briefing?.summary ??
+                      '인증 기능 개발과 API 연동은 완료됐으며, Production 배포를 준비하고 있습니다.'}
+                  </p>
                   <div className="handoff-review-status-list">
-                    {handoffReviewStatuses.map((item) => (
-                      <article className={item.danger ? 'danger' : ''} key={item.state}>
+                    {reviewStatuses.map((item) => (
+                      <article className={item.danger ? 'danger' : ''} key={`${item.state}-${item.title}`}>
                         <span>{item.done ? <i className="bi bi-check" /> : <i className="bi bi-x" />}</span>
                         <div>
                           <strong>{item.state}</strong>
@@ -681,23 +785,33 @@ export function ShiftEndModal({
                       </article>
                     ))}
                   </div>
-                  <p className="handoff-review-note">
-                    영향: Production 배포 중단
-                    <br />
-                    상태: Platform 팀 확인 대기
-                    <br />
-                    관련 작업: AURORA #128
-                  </p>
+                  {briefing ? (
+                    <p className="handoff-review-note">
+                      완료: 결정사항 {briefingDecisionCount}건
+                      <br />
+                      미해결: 막힌 작업 {briefingBlockedCount}건
+                    </p>
+                  ) : (
+                    <p className="handoff-review-note">
+                      영향: Production 배포 중단
+                      <br />
+                      상태: Platform 팀 확인 대기
+                      <br />
+                      관련 작업: AURORA #128
+                    </p>
+                  )}
                 </section>
                 <section className="handoff-review-section">
                   <h3>추진계획 및 우선순위</h3>
                   <div className="handoff-review-priority-list">
-                    {handoffReviewPriorities.map((item) => (
-                      <article key={item.title}>
+                    {reviewPriorities.map((item) => (
+                      <article key={`${item.status ?? 'mock'}-${item.title}-${item.assignee}`}>
                         <span />
                         <div>
                           <strong>{item.title}</strong>
+                          {item.status && <small>상태: {TASK_STATE_LABEL[item.status] ?? item.status}</small>}
                           <small>담당자: {item.assignee}</small>
+                          {item.source && <small>출처: {item.source}</small>}
                         </div>
                       </article>
                     ))}
