@@ -126,6 +126,24 @@ select {
   font-weight: 800;
 }
 
+.topbar .brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 210px;
+  height: 54px;
+  transform: translate(-30px, 30px)
+}
+
+.topbar .brand-logo img {
+  display: block;
+  width: 176px;
+  height: auto;
+  max-height: 110px;
+  object-fit: contain;
+  object-position: left center;
+}
+
 .topbar h2 {
   margin-left: 14px;
   font-size: 38px;
@@ -287,8 +305,8 @@ select {
   height: 48px;
   place-items: center;
   border-radius: 50%;
-  color: #111;
-  background: #fff;
+  color: #fff;
+  background: rgb(0 0 0 / 75%);
   font-size: 22px;
 }
 
@@ -296,7 +314,7 @@ select {
   display: block;
   color: #c9c9cf;
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 550;
 }
 
 .dashboard-org strong {
@@ -304,5 +322,5 @@ select {
   margin-top: 4px;
   color: #fff;
   font-size: 19px;
-  font-weight: 720;
+  font-weight: 620;
 }

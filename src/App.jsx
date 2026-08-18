@@ -10,6 +10,7 @@ import { handoffDashboardMock } from './data/handoffMock.js';
 import { handoffProjects, handoffRecipients } from './data/handoffFlowMock.js';
 import { findAcronymsInLines, mergeAcronyms } from './utils/acronyms.js';
 import { isClusteredMessage, shouldShowMessageTime } from './utils/messageGrouping.js';
+import trLogo from './assets/TR_Logo.png';
 
 const viewFromLocation = () => {
   if (typeof window === 'undefined') return 'dashboard';
@@ -938,7 +939,9 @@ function App() {
       )}
       <section className={`apex-window ${isMessengerView ? 'view-messenger' : isScheduleView ? 'view-schedule' : 'view-dashboard'} ${chatOpen ? 'mobile-chat-open' : ''} ${isMessengerView && profileOpen ? 'profile-open' : ''}`}>
         <header className="topbar">
-          <h1>APEX</h1>
+          <h1 className="brand-logo">
+            <img src={trLogo} alt="Timezone Relay" />
+          </h1>
           {isMessengerView ? (
             <h2>채팅</h2>
           ) : isScheduleView ? (

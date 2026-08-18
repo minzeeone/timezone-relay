@@ -27,6 +27,15 @@
     font-size: 38px;
   }
 
+  .topbar .brand-logo {
+    width: 132px;
+    height: 42px;
+  }
+
+  .topbar .brand-logo img {
+    max-height: 42px;
+  }
+
   .topbar h2 {
     font-size: 31px;
   }
@@ -118,6 +127,17 @@
     align-items: center;
     justify-content: space-between;
     min-height: 58px;
+  }
+
+  .topbar .brand-logo {
+    width: 118px;
+    height: 38px;
+    align-items: center;
+    transform: translateY(0);
+  }
+
+  .topbar .brand-logo img {
+    max-height: 38px;
   }
 
   .topbar h2,

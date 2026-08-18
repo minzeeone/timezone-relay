@@ -20,7 +20,7 @@ const TIMELINE_FOCUS_START_HOUR = 16;
 const TIMELINE_DAY_START_HOUR = 0;
 const TIMELINE_DAY_END_HOUR = 24;
 const TIMELINE_TOTAL_HOURS = TIMELINE_DAY_END_HOUR - TIMELINE_DAY_START_HOUR;
-const TIMELINE_INITIAL_VISIBLE_HOURS = 4;
+const TIMELINE_INITIAL_VISIBLE_HOURS = 16;
 const TIMELINE_MIN_WIDTH = 860;
 const BASE_SCHEDULE_DATE = new Date(2026, 7, 18);
 
@@ -157,8 +157,72 @@ function ShiftNode({ data }) {
   );
 }
 
-function HandoffEdge({ id, sourceX, sourceY, targetX, targetY, markerEnd, style }) {
-  const path = `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
+const EDGE_NODE_GAP = 24;
+const EDGE_ROW_CLEARANCE = 52;
+const EDGE_CORNER_RADIUS = 5;
+
+const lineTo = (x, y) => `L ${Math.round(x)} ${Math.round(y)}`;
+const quadTo = (controlX, controlY, x, y) =>
+  `Q ${Math.round(controlX)} ${Math.round(controlY)} ${Math.round(x)} ${Math.round(y)}`;
+
+const buildOrthogonalHandoffPath = ({ sourceX, sourceY, targetX, targetY, sourceNode, targetNode }) => {
+  const sourceRight = sourceNode ? sourceNode.x + sourceNode.width : sourceX;
+  const targetLeft = targetNode ? targetNode.x : targetX;
+  const sourceTop = sourceNode ? sourceNode.y : sourceY - 42;
+  const sourceBottom = sourceNode ? sourceNode.y + sourceNode.height : sourceY + 42;
+  const targetTop = targetNode ? targetNode.y : targetY - 42;
+  const targetBottom = targetNode ? targetNode.y + targetNode.height : targetY + 42;
+  const sourceExitX = Math.max(sourceX + EDGE_NODE_GAP, sourceRight + EDGE_NODE_GAP);
+  const targetEntryX = Math.min(targetX - EDGE_NODE_GAP, targetLeft - EDGE_NODE_GAP);
+  const hasHorizontalRoom = sourceExitX + EDGE_CORNER_RADIUS * 2 < targetEntryX;
+
+  if (hasHorizontalRoom) {
+    if (Math.abs(sourceY - targetY) < 4) {
+      return [
+        `M ${Math.round(sourceX)} ${Math.round(sourceY)}`,
+        lineTo(sourceExitX, sourceY),
+        lineTo(targetEntryX, targetY),
+        lineTo(targetX, targetY),
+      ].join(' ');
+    }
+
+    return [
+      `M ${Math.round(sourceX)} ${Math.round(sourceY)}`,
+      lineTo(sourceExitX - EDGE_CORNER_RADIUS, sourceY),
+      quadTo(sourceExitX, sourceY, sourceExitX, sourceY + Math.sign(targetY - sourceY || 1) * EDGE_CORNER_RADIUS),
+      lineTo(sourceExitX, targetY - Math.sign(targetY - sourceY || 1) * EDGE_CORNER_RADIUS),
+      quadTo(sourceExitX, targetY, sourceExitX + EDGE_CORNER_RADIUS, targetY),
+      lineTo(targetEntryX, targetY),
+      lineTo(targetX, targetY),
+    ].join(' ');
+  }
+
+  const routeAbove = sourceY > targetY;
+  const laneY = routeAbove
+    ? Math.min(sourceTop, targetTop) - EDGE_ROW_CLEARANCE
+    : Math.max(sourceBottom, targetBottom) + EDGE_ROW_CLEARANCE;
+  const laneDirection = Math.sign(laneY - sourceY || 1);
+  const targetDirection = Math.sign(targetY - laneY || 1);
+
+  return [
+    `M ${Math.round(sourceX)} ${Math.round(sourceY)}`,
+    lineTo(sourceExitX, sourceY),
+    lineTo(sourceExitX, laneY),
+    lineTo(targetEntryX, laneY),
+    lineTo(targetEntryX, targetY),
+    lineTo(targetX, targetY),
+  ].join(' ');
+};
+
+function HandoffEdge({ id, sourceX, sourceY, targetX, targetY, markerEnd, style, data }) {
+  const path = buildOrthogonalHandoffPath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourceNode: data?.sourceNode,
+    targetNode: data?.targetNode,
+  });
 
   return <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} />;
 }
@@ -290,30 +354,47 @@ export function TeamSchedule() {
     [selectedDateKey]
   );
 
-  const flowNodes = useMemo(() => {
-    const incomingTargetIds = new Set(activeTimelineMembers.map((member) => member.handoff?.targetId).filter(Boolean));
+  const timelineNodeRects = useMemo(() => {
+    const rects = new Map();
 
-    return activeTimelineMembers.map((member) => {
+    activeTimelineMembers.forEach((member) => {
       const metrics = calculateTimelineMemberMetrics(member, {
         timelineStartHour: TIMELINE_DAY_START_HOUR,
         totalHours: TIMELINE_TOTAL_HOURS,
         timelineWidth,
       });
 
+      rects.set(member.id, {
+        x: metrics.x,
+        y: metrics.y,
+        width: metrics.width,
+        height: 84,
+      });
+    });
+
+    return rects;
+  }, [activeTimelineMembers, timelineWidth]);
+
+  const flowNodes = useMemo(() => {
+    const incomingTargetIds = new Set(activeTimelineMembers.map((member) => member.handoff?.targetId).filter(Boolean));
+
+    return activeTimelineMembers.map((member) => {
+      const rect = timelineNodeRects.get(member.id);
+
       return {
         id: member.id,
         type: 'shift',
-        position: { x: metrics.x, y: metrics.y },
-        style: { width: metrics.width, height: 84 },
+        position: { x: rect.x, y: rect.y },
+        style: { width: rect.width, height: rect.height },
         data: {
           member,
-          width: `${metrics.width}px`,
+          width: `${rect.width}px`,
           hasIncomingHandoff: incomingTargetIds.has(member.id),
           hasOutgoingHandoff: Boolean(member.handoff?.targetId),
         },
       };
     });
-  }, [activeTimelineMembers, timelineWidth]);
+  }, [activeTimelineMembers, timelineNodeRects]);
 
   const flowEdges = useMemo(
     () => {
@@ -329,12 +410,16 @@ export function TeamSchedule() {
           target: member.handoff.targetId,
           targetHandle: 'left',
           type: 'handoff',
+          data: {
+            sourceNode: timelineNodeRects.get(member.id),
+            targetNode: timelineNodeRects.get(member.handoff.targetId),
+          },
           className: 'schedule-handoff-edge',
           style: { stroke: 'rgba(255, 255, 255, 0.82)', strokeWidth: 2 },
           markerEnd: { type: MarkerType.ArrowClosed, color: 'rgba(255, 255, 255, 0.82)', width: 14, height: 14 },
         }));
     },
-    [activeTimelineMembers]
+    [activeTimelineMembers, timelineNodeRects]
   );
 
   const toggleFilter = (filterName) => {
@@ -452,16 +537,17 @@ export function TeamSchedule() {
           <span>{formatVisibleHours(visibleHours)}시간</span>
         </div>
 
-        <div
-          ref={timelineRef}
-          className={`schedule-timeline ${isDraggingRange ? 'is-dragging' : ''}`}
-          onScroll={handleTimelineScroll}
-          onPointerDown={handleTimelinePointerDown}
-          onPointerMove={handleTimelinePointerMove}
-          onPointerUp={handleTimelinePointerEnd}
-          onPointerCancel={handleTimelinePointerEnd}
-          onPointerLeave={handleTimelinePointerLeave}
-        >
+        <div className="schedule-timeline-shell">
+          <div
+            ref={timelineRef}
+            className={`schedule-timeline ${isDraggingRange ? 'is-dragging' : ''}`}
+            onScroll={handleTimelineScroll}
+            onPointerDown={handleTimelinePointerDown}
+            onPointerMove={handleTimelinePointerMove}
+            onPointerUp={handleTimelinePointerEnd}
+            onPointerCancel={handleTimelinePointerEnd}
+            onPointerLeave={handleTimelinePointerLeave}
+          >
           <div className="timeline-scale-plane" style={{ '--timeline-width': `${timelineWidth}px` }}>
             {timelineTicks.map((hour, index) => (
               <div
@@ -509,6 +595,7 @@ export function TeamSchedule() {
               viewport={{ x: 0, y: 0, zoom: 1 }}
             />
           </div>
+        </div>
         </div>
       </section>
     </main>
