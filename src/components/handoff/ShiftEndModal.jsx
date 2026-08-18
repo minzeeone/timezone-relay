@@ -200,6 +200,20 @@ function formatReviewLocalTime(countryCode, locationLabel) {
   return `${clock} ${locationLabel}`;
 }
 
+const recipientStatusLabels = {
+  online: '근무중',
+  offline: '근무종료',
+  busy: '회의중',
+  away: '자리비움',
+};
+
+function formatRecipientMeta(member) {
+  const timing = presenceOf(member.countryCode ?? 'KR');
+  const statusLabel = recipientStatusLabels[member.status] ?? timing.state;
+
+  return `${statusLabel} - ${timing.clock} ${member.cityLabel ?? timing.country}`;
+}
+
 function LocalizationHint({ children, note }) {
   return (
     <span className="localized-hint" data-note={note} tabIndex={0}>
@@ -378,8 +392,6 @@ export function ShiftEndModal({
   useEffect(() => {
     if (!isReviewStep) {
       setIsJapaneseReview(false);
-      setLocalTimeTick(0);
-      return undefined;
     }
 
     setLocalTimeTick((tick) => tick + 1);
@@ -388,7 +400,7 @@ export function ShiftEndModal({
     }, 30000);
 
     return () => window.clearInterval(timer);
-  }, [isReviewStep]);
+  }, [isReviewStep, step]);
 
   useEffect(() => {
     if (!isSendingStep) return undefined;
@@ -491,7 +503,7 @@ export function ShiftEndModal({
                   </span>
                   <span>
                     <strong>{member.name}</strong>
-                    <small>{member.meta}</small>
+                    <small>{formatRecipientMeta(member)}</small>
                   </span>
                 </button>
               ))}
@@ -507,7 +519,7 @@ export function ShiftEndModal({
               {selectedMember.avatarImage ? <img src={selectedMember.avatarImage} alt="" /> : <span>{selectedMember.avatar}</span>}
             </div>
             <strong className="project-target-name">{selectedMember.name}</strong>
-            <small className="project-target-meta">{selectedMember.meta}</small>
+            <small className="project-target-meta">{formatRecipientMeta(selectedMember)}</small>
             <h2 id="shift-modal-title">인계할 프로젝트를 선택해주세요.</h2>
             <div className="handoff-project-list" role="listbox" aria-label="인계할 프로젝트">
               {projects.map((project, index) => (

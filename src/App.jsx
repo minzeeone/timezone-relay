@@ -10,6 +10,7 @@ import { handoffDashboardMock } from './data/handoffMock.js';
 import { handoffProjects, handoffRecipients } from './data/handoffFlowMock.js';
 import { findAcronymsInLines, mergeAcronyms } from './utils/acronyms.js';
 import { isClusteredMessage, shouldShowMessageTime } from './utils/messageGrouping.js';
+import { presenceOf } from './utils/timing.js';
 import trLogo from './assets/TR_Logo.png';
 
 const viewFromLocation = () => {
@@ -32,6 +33,24 @@ const viewFromLocation = () => {
 const replaceHash = (hash) => {
   if (typeof window === 'undefined') return;
   window.history.replaceState(null, '', hash);
+};
+
+const contactTimingMap = {
+  1: { countryCode: 'US' },
+  2: { countryCode: 'RU' },
+  3: { countryCode: 'KR' },
+  4: { countryCode: 'JP' },
+  5: { countryCode: 'GB' },
+};
+
+const formatContactTime = (contact) => {
+  const timing = presenceOf(contact.countryCode ?? contactTimingMap[contact.id]?.countryCode ?? 'KR');
+  return timing.clock;
+};
+
+const formatProfileLocalTime = (contact) => {
+  const timing = presenceOf(contact.countryCode ?? contactTimingMap[contact.id]?.countryCode ?? 'KR');
+  return `${timing.clock12} · ${timing.zoneAbbr}`;
 };
 
 const createJapaneseLocalVersion = (original = '', localizedText = '') => {
@@ -384,10 +403,18 @@ function App() {
   const [handoffBriefing, setHandoffBriefing] = useState(null);
   const [handoffBriefingError, setHandoffBriefingError] = useState('');
   const [termForm, setTermForm] = useState(emptyTermForm);
+  const [profileTimeTick, setProfileTimeTick] = useState(0);
   const conversationEndRef = useRef(null);
 
   const selectedContact = contacts.find((contact) => contact.id === selectedId) ?? contacts[0];
   const selectedProfile = contactProfiles[selectedContact.id] ?? contactProfiles.default;
+  const selectedProfileWithTiming = useMemo(
+    () => ({
+      ...selectedProfile,
+      localTime: formatProfileLocalTime(selectedContact),
+    }),
+    [selectedContact, selectedProfile, profileTimeTick]
+  );
   const isMessengerView = activeView === 'messenger';
   const isScheduleView = activeView === 'schedule';
   const isDashboardView = activeView === 'dashboard';
@@ -452,6 +479,14 @@ function App() {
       block: 'end',
     });
   }, [messages.length]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setProfileTimeTick((tick) => tick + 1);
+    }, 30000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!localLanguageNotice) return undefined;
@@ -1036,7 +1071,7 @@ function App() {
                   </small>
                 </span>
                 <span className="contact-meta">
-                  <time>{contact.time}</time>
+                  <time>{formatContactTime(contact)}</time>
                   <span className="star" onClick={(event) => toggleStar(event, contact.id)} role="button" tabIndex="0" aria-label="즐겨찾기">
                     <i className={`bi ${contact.starred ? 'bi-star-fill' : 'bi-star'}`} />
                   </span>
@@ -1357,7 +1392,7 @@ function App() {
           </footer>
         </section>
 
-        {profileOpen && <ProfilePanel contact={selectedContact} profile={selectedProfile} onClose={() => setProfileOpen(false)} />}
+        {profileOpen && <ProfilePanel contact={selectedContact} profile={selectedProfileWithTiming} onClose={() => setProfileOpen(false)} />}
           </>
         )}
         {shiftEndOpen && (

@@ -1,6 +1,31 @@
+import { useEffect, useState } from 'react';
 import { activeHandoffs, handoffRecipients } from '../../data/handoffFlowMock.js';
+import { presenceOf } from '../../utils/timing.js';
+
+const memberStatusLabels = {
+  online: '근무중',
+  offline: '근무종료',
+  busy: '회의중',
+  away: '자리비움',
+};
+
+const formatMemberMeta = (member) => {
+  const timing = presenceOf(member.countryCode ?? 'KR');
+  const statusLabel = memberStatusLabels[member.status] ?? timing.state;
+  return `${statusLabel} - ${timing.clock} ${member.cityLabel ?? timing.country}`;
+};
 
 export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
+  const [, setLocalTimeTick] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setLocalTimeTick((tick) => tick + 1);
+    }, 30000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <section className="handoff-dashboard" aria-label="AI 업무 인수인계 대시보드">
       <section className="wire-hero">
@@ -104,7 +129,7 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
               </div>
               <div>
                 <strong>{member.name}</strong>
-                <small>{member.meta}</small>
+                <small>{formatMemberMeta(member)}</small>
               </div>
               <button type="button" aria-label={`${member.name}에게 전화`}>
                 <i className="bi bi-telephone" />
