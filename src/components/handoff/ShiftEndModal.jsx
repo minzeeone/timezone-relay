@@ -294,6 +294,42 @@ function buildReviewPriorities(briefing) {
     }));
 }
 
+/** 국가 코드 → 버튼에 보여줄 언어 이름. 서버(border02-handoff-translate.js)와 같은 매핑입니다. */
+const LANGUAGE_LABEL_BY_COUNTRY = {
+  KR: '한국어',
+  JP: '일본어',
+  US: '영어',
+  GB: '영어',
+  UK: '영어',
+  SG: '영어',
+  DE: '독일어',
+  RU: '러시아어',
+};
+
+/**
+ * 번역 결과를 원본 브리핑 위에 덮어씁니다.
+ *
+ * 번역본에는 content/detail/owner 만 오고 status·source 는 없습니다.
+ * 순서가 원본과 같으므로 같은 자리끼리 합쳐서, 아래 build* 함수들을
+ * 번역본에도 그대로 쓸 수 있게 만듭니다.
+ */
+function mergeTranslation(briefing, translation) {
+  if (!briefing || !translation) return briefing;
+
+  return {
+    ...briefing,
+    summary: translation.summary || briefing.summary,
+    decisions: (briefing.decisions ?? []).map((decision, index) => ({
+      ...decision,
+      ...(translation.decisions?.[index] ?? {}),
+    })),
+    tasks: (briefing.tasks ?? []).map((task, index) => ({
+      ...task,
+      ...(translation.tasks?.[index] ?? {}),
+    })),
+  };
+}
+
 function projectNameFromSelection(selectedProject, projects) {
   if (!selectedProject) return projects[0] ?? 'Project Aurora';
   return selectedProject.replace(/-\d+$/, '');
@@ -325,6 +361,8 @@ export function ShiftEndModal({
   const isSendingStep = step === 'sending';
   const isSentStep = step === 'sent';
   const selectedMember = recipients.find((member) => member.name === selectedRecipient) ?? recipients[0];
+  const recipientCountryCode = selectedMember?.countryCode ?? 'JP';
+  const recipientLanguageLabel = LANGUAGE_LABEL_BY_COUNTRY[recipientCountryCode] ?? '현지어';
   const selectedProjectName = projectNameFromSelection(selectedProject, projects);
   const reviewProjectName = selectedProjectName === 'Project Aurora' ? 'Aurora Project' : selectedProjectName;
   const [visiblePreparationCount, setVisiblePreparationCount] = useState(0);
@@ -332,6 +370,10 @@ export function ShiftEndModal({
   const [generationPhase, setGenerationPhase] = useState(0);
   const [generationCount, setGenerationCount] = useState(0);
   const [isJapaneseReview, setIsJapaneseReview] = useState(false);
+  // 인계자 언어로 번역한 결과 (Border 02 × Border 04)
+  const [translation, setTranslation] = useState(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationError, setTranslationError] = useState('');
   const [localTimeTick, setLocalTimeTick] = useState(0);
   const generationStepIndex = Math.min(generationPhase, generationSteps.length - 1);
   const activeGenerationStep = generationSteps[generationStepIndex];
@@ -341,27 +383,18 @@ export function ShiftEndModal({
     isGeneratingStep && generationPhase >= generationSteps.length && isBriefingSettled;
 
   // 실제 브리핑이 오면 목업 대신 그 결과로 검토 화면을 채웁니다.
-  const liveReviewTasks = briefing ? buildReviewTasks(briefing) : null;
-  const liveReviewStatuses = briefing ? buildReviewStatuses(briefing) : null;
-  const liveReviewPriorities = briefing ? buildReviewPriorities(briefing) : null;
-  const reviewTasks =
-    liveReviewTasks && !isJapaneseReview
-      ? liveReviewTasks
-      : isJapaneseReview
-        ? handoffReviewTasksJa
-        : handoffReviewTasks;
+  // 번역 보기일 때는 번역본을 덮어쓴 브리핑으로 화면을 만듭니다.
+  const activeBriefing = isJapaneseReview ? mergeTranslation(briefing, translation) : briefing;
+  const liveReviewTasks = activeBriefing ? buildReviewTasks(activeBriefing) : null;
+  const liveReviewStatuses = activeBriefing ? buildReviewStatuses(activeBriefing) : null;
+  const liveReviewPriorities = activeBriefing ? buildReviewPriorities(activeBriefing) : null;
+  // 실제 브리핑이 있으면 항상 그걸 씁니다. (번역 보기면 위에서 이미 번역본이 덮여 있습니다)
+  // 아래 목업들은 API 가 실패해 브리핑이 아예 없을 때만 쓰입니다.
+  const reviewTasks = liveReviewTasks ?? (isJapaneseReview ? handoffReviewTasksJa : handoffReviewTasks);
   const reviewStatuses =
-    liveReviewStatuses && !isJapaneseReview
-      ? liveReviewStatuses
-      : isJapaneseReview
-        ? handoffReviewStatusesJa
-        : handoffReviewStatuses;
+    liveReviewStatuses ?? (isJapaneseReview ? handoffReviewStatusesJa : handoffReviewStatuses);
   const reviewPriorities =
-    liveReviewPriorities && !isJapaneseReview
-      ? liveReviewPriorities
-      : isJapaneseReview
-        ? handoffReviewPrioritiesJa
-        : handoffReviewPriorities;
+    liveReviewPriorities ?? (isJapaneseReview ? handoffReviewPrioritiesJa : handoffReviewPriorities);
   const briefingDecisionCount = briefing?.decisions?.length ?? 0;
   const briefingBlockedCount = briefing?.tasks?.filter((task) => task.status === 'blocked').length ?? 0;
   const handoffGiverLocalTime = formatReviewLocalTime('KR', '대한민국');
@@ -450,6 +483,51 @@ export function ShiftEndModal({
 
     return () => window.clearInterval(counter);
   }, [activeGenerationStep, isGenerationComplete, isGeneratingStep]);
+
+  // 인계자가 바뀌거나 브리핑이 새로 생성되면 이전 번역은 버립니다.
+  useEffect(() => {
+    setTranslation(null);
+    setTranslationError('');
+    setIsJapaneseReview(false);
+  }, [briefing, selectedRecipient]);
+
+  /**
+   * 번역 보기 토글. 처음 켤 때 한 번만 서버를 부르고 이후에는 캐시된 결과를 씁니다.
+   */
+  const toggleTranslation = async () => {
+    if (isJapaneseReview) {
+      setIsJapaneseReview(false);
+      return;
+    }
+
+    if (translation || !briefing) {
+      setIsJapaneseReview(true);
+      return;
+    }
+
+    setIsTranslating(true);
+    setTranslationError('');
+
+    try {
+      const response = await fetch('/api/handoff/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ briefing, countryCode: recipientCountryCode }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || '번역에 실패했습니다.');
+      }
+
+      setTranslation(await response.json());
+      setIsJapaneseReview(true);
+    } catch (error) {
+      setTranslationError(error.message || '번역에 실패했습니다.');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
 
   // ESC 로도 닫을 수 있게 합니다. 생성·전송 중에는 끊기면 안 되므로 무시합니다.
   useEffect(() => {
@@ -611,113 +689,6 @@ export function ShiftEndModal({
           </div>
         ) : isReviewStep ? (
           <div className={`shift-modal-content handoff-review ${isJapaneseReview ? 'translated-review' : ''}`} key="handoff-review">
-            {isJapaneseReview && (
-              <div className="handoff-review-japanese">
-                <header className="handoff-review-header">
-                  <span>
-                    <LocalizationHint note="업무 인수인계서를 일본 업무 문서에서 자연스러운 제목으로 바꿨어요.">業務引き継ぎ書</LocalizationHint>
-                  </span>
-                  <strong>{reviewProjectName}</strong>
-                </header>
-                <section className="handoff-review-parties" aria-label="引き継ぎ参加者">
-                  <div>
-                    <span>引き継ぐ人</span>
-                    <strong>김의중</strong>
-                    <small>開発チーム フロントエンド</small>
-                    <small>{handoffGiverLocalTimeJa}</small>
-                  </div>
-                  <i className="bi bi-arrow-right" aria-hidden="true" />
-                  <div>
-                    <span>引き継ぎ先</span>
-                    <strong>{selectedMember.name}</strong>
-                    <small>製品チーム PM</small>
-                    <small>{handoffRecipientLocalTimeJa}</small>
-                  </div>
-                </section>
-                <div className="handoff-review-grid">
-                  <div className="handoff-review-column">
-                    <section className="handoff-review-section">
-                      <h3>引き継ぎ業務</h3>
-                      <p className="handoff-review-lead">
-                        <LocalizationHint note="AURORA는 프로젝트명이므로 보존하고, 인증 시스템 개편은 일본어 제품 문맥으로 자연스럽게 변환했어요.">
-                          AURORA認証システム改編
-                        </LocalizationHint>
-                      </p>
-                      <p>
-                        グローバルユーザー認証システムを既存方式から
-                        <LocalizationHint note="OAuth는 기술 약어라 그대로 두고, 기반 구조라는 의미만 일본어로 현지화했어요.">OAuthベースの認証構造</LocalizationHint>
-                        へ移行するプロジェクトです。
-                      </p>
-                    </section>
-                    <section className="handoff-review-section">
-                      <h3>担当業務</h3>
-                      <div className="handoff-review-task-list">
-                        {handoffReviewTasksJa.map((task, index) => (
-                          <article className={task.done ? 'done' : ''} key={task.number}>
-                            <span>{task.state}</span>
-                            <div>
-                              <strong>{task.number}</strong>
-                              <b>
-                                <LocalizationHint note={taskLocalizationNotesJa[index]}>{task.title}</LocalizationHint>
-                              </b>
-                              <small>{task.description}</small>
-                            </div>
-                          </article>
-                        ))}
-                      </div>
-                    </section>
-                  </div>
-                  <div className="handoff-review-column">
-                    <section className="handoff-review-section">
-                      <h3>進行状況および未解決事項</h3>
-                      <p>
-                        認証機能の開発とAPI連携は完了しており、
-                        <LocalizationHint note="Production은 개발 용어로 보존하고, 배포는 일본 개발팀에서 쓰는 デプロイ로 변환했어요.">Productionデプロイ</LocalizationHint>
-                        を準備しています。
-                      </p>
-                      <div className="handoff-review-status-list">
-                        {handoffReviewStatusesJa.map((item, index) => (
-                          <article className={item.danger ? 'danger' : ''} key={item.state}>
-                            <span>{item.done ? <i className="bi bi-check" /> : <i className="bi bi-x" />}</span>
-                            <div>
-                              <strong>{item.state}</strong>
-                              <small>
-                                <LocalizationHint note={statusLocalizationNotesJa[index]}>{item.title}</LocalizationHint>
-                              </small>
-                              {item.description && <small>{item.description}</small>}
-                            </div>
-                          </article>
-                        ))}
-                      </div>
-                      <p className="handoff-review-note">
-                        影響: <LocalizationHint note="배포 중단의 영향을 일본어 상태 문장으로 짧게 정리했어요.">Productionデプロイ停止</LocalizationHint>
-                        <br />
-                        状態: <LocalizationHint note="확인 대기를 일본 업무 커뮤니케이션에서 자연스러운 待ち 표현으로 바꿨어요.">Platformチーム確認待ち</LocalizationHint>
-                        <br />
-                        関連作業: AURORA #128
-                      </p>
-                    </section>
-                    <section className="handoff-review-section">
-                      <h3>推進計画および優先順位</h3>
-                      <div className="handoff-review-priority-list">
-                        {handoffReviewPrioritiesJa.map((item, index) => (
-                          <article key={item.title}>
-                            <span />
-                            <div>
-                              <strong>
-                                <LocalizationHint note={priorityLocalizationNotesJa[index]}>{item.title}</LocalizationHint>
-                              </strong>
-                              <small>担当者: {item.assignee}</small>
-                            </div>
-                          </article>
-                        ))}
-                        <i className="bi bi-arrow-down" aria-hidden="true" />
-                      </div>
-                    </section>
-                  </div>
-                </div>
-              </div>
-            )}
             <header className="handoff-review-header">
               <span>업무 인수인계서</span>
               <strong>{reviewProjectName}</strong>
@@ -770,7 +741,7 @@ export function ShiftEndModal({
                 <section className="handoff-review-section">
                   <h3>진행상황 및 미해결사항</h3>
                   <p>
-                    {briefing?.summary ??
+                    {activeBriefing?.summary ??
                       '인증 기능 개발과 API 연동은 완료됐으며, Production 배포를 준비하고 있습니다.'}
                   </p>
                   <div className="handoff-review-status-list">
@@ -875,9 +846,14 @@ export function ShiftEndModal({
           </div>
         ) : isReviewStep ? (
           <div className="handoff-review-actions">
-            <button type="button" onClick={() => setIsJapaneseReview((current) => !current)}>
-              {isJapaneseReview ? '한국어 원문 보기' : '번역 원문 보기'}
+            <button type="button" onClick={toggleTranslation} disabled={isTranslating}>
+              {isTranslating
+                ? `${recipientLanguageLabel}로 번역 중...`
+                : isJapaneseReview
+                  ? '한국어 원문 보기'
+                  : `${recipientLanguageLabel}로 보기`}
             </button>
+            {translationError && <span className="handoff-review-error">{translationError}</span>}
             <button type="button" onClick={onBack}>
               수정하기
             </button>

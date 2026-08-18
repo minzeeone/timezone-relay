@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { run as runBorder03 } from './borders/border03-culture.js';
 import { run as runBorder04 } from './borders/border04-org.js';
+import { run as runHandoffTranslate } from './borders/border02-handoff-translate.js';
 import { collectProjectLogs } from './data/projectLogs.js';
 
 dotenv.config({
@@ -328,6 +329,19 @@ app.post('/api/culture/analyze', async (req, res) => {
     console.error('Culture API error:', error);
     res.status(error.status || 500).json({
       error: error.message || '문화 해석에 실패했습니다.',
+    });
+  }
+});
+
+// 인수인계서를 인계받는 사람의 언어로 번역합니다. (Border 02 × Border 04)
+app.post('/api/handoff/translate', async (req, res) => {
+  try {
+    const result = await runHandoffTranslate(req.body ?? {});
+    res.json(result);
+  } catch (error) {
+    console.error('Handoff translate API error:', error);
+    res.status(error.statusCode || error.status || 500).json({
+      error: error.message || '인수인계서 번역에 실패했습니다.',
     });
   }
 });

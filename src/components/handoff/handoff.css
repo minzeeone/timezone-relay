@@ -786,17 +786,11 @@
   box-shadow: 0 0 12px rgba(255, 119, 69, 0.16);
 }
 
-.handoff-review.translated-review > .handoff-review-header,
-.handoff-review.translated-review > .handoff-review-parties,
-.handoff-review.translated-review > .handoff-review-grid {
-  display: none;
-}
-
-.handoff-review-japanese {
-  display: grid;
-  gap: 0;
-  animation: previewItemIn 260ms var(--ease-out) both;
-}
+/*
+ * 예전에는 번역 보기를 켜면 한국어 블록을 통째로 숨기고
+ * 일본어 전용 블록(.handoff-review-japanese)을 대신 띄웠습니다.
+ * 지금은 같은 블록이 AI 번역 결과를 그대로 그리므로 숨기지 않습니다.
+ */
 
 .handoff-review.translated-review {
   overflow-y: auto;
