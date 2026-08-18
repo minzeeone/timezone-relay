@@ -1,5 +1,26 @@
 import profileBanner from '../assets/profile-banner.jpg';
 import waguriKaorukoAvatar from '../assets/waguri-kaoruko.jpg';
+import { presenceOf } from '../utils/timing.js';
+
+/**
+ * 연락처 목록/프로필의 현지 시각은 고정값이 아니라 실제로 흘러가야 합니다.
+ * time, message, localTime 을 getter 로 두어 화면이 그려질 때마다 다시 계산합니다.
+ */
+const withPresence = (contact) => ({
+  ...contact,
+  get time() {
+    return presenceOf(this.countryCode, this.fixedState).clock;
+  },
+  get message() {
+    return `${presenceOf(this.countryCode, this.fixedState).state} - ${this.cityLabel}`;
+  },
+});
+
+/** 프로필 패널에 표시할 "10:48 AM · KST" 형태의 현지 시각입니다. */
+const liveLocalTime = (countryCode) => {
+  const { clock12, zoneAbbr } = presenceOf(countryCode);
+  return `${clock12} · ${zoneAbbr}`;
+};
 
 const legacyContactsSeed = [
   {
@@ -66,68 +87,70 @@ const legacyContactsSeed = [
 ];
 
 export const contactsSeed = [
-  {
+  withPresence({
     id: 1,
     name: 'Alexander Lily',
     avatar: 'AL',
     avatarType: 'initial',
     status: 'offline',
-    time: '05:32',
-    message: '근무종료 - 미국 뉴욕',
     unread: 2,
     language: 'ENG',
     active: true,
     starred: false,
-  },
-  {
+    countryCode: 'US',
+    cityLabel: '미국 뉴욕',
+  }),
+  withPresence({
     id: 2,
     name: 'Jaxon David',
     avatar: 'JD',
     avatarType: 'initial',
     status: 'offline',
-    time: '08:32',
-    message: '근무종료 - 러시아',
     unread: 2,
     language: 'ENG',
     starred: false,
-  },
-  {
+    countryCode: 'RU',
+    cityLabel: '러시아 모스크바',
+  }),
+  withPresence({
     id: 3,
     name: '김멋사',
     avatar: '🦁',
     avatarType: 'emoji',
     status: 'busy',
-    time: '05:32',
-    message: '회의중 - 대한민국 서울',
     unread: 1,
     language: 'KOR',
     starred: false,
-  },
-  {
+    countryCode: 'KR',
+    cityLabel: '대한민국 서울',
+    fixedState: '회의중',
+  }),
+  withPresence({
     id: 4,
     name: 'Waguri Kaoruko',
     avatar: 'WK',
     avatarImage: waguriKaorukoAvatar,
     avatarType: 'image',
     status: 'online',
-    time: '17:32',
-    message: '근무중 - 일본 도쿄',
     unread: 0,
     language: 'JPN',
     starred: false,
-  },
-  {
+    countryCode: 'JP',
+    cityLabel: '일본 도쿄',
+  }),
+  withPresence({
     id: 5,
     name: 'Jason',
     avatar: 'J',
     avatarType: 'initial',
     status: 'away',
-    time: '09:32',
-    message: '자리비움 - 영국 런던',
     unread: 0,
     language: 'ENG',
     starred: false,
-  },
+    countryCode: 'GB',
+    cityLabel: '영국 런던',
+    fixedState: '자리비움',
+  }),
 ];
 
 export const contactProfiles = {
@@ -203,7 +226,9 @@ Object.assign(contactProfiles, {
   1: {
     email: 'alexander.lily@example.com',
     location: '미국 뉴욕',
-    localTime: '05:32 AM · EST',
+    get localTime() {
+      return liveLocalTime('US');
+    },
     role: 'Backend Engineer of APEX Company',
     phone: '123-456-2101',
     coverImage: profileBanner,
@@ -225,7 +250,9 @@ Object.assign(contactProfiles, {
   2: {
     email: 'jaxon.david@example.com',
     location: '러시아',
-    localTime: '08:32 AM · MSK',
+    get localTime() {
+      return liveLocalTime('RU');
+    },
     role: 'Platform Engineer of APEX Company',
     phone: '123-456-2102',
     coverImage: profileBanner,
@@ -247,7 +274,9 @@ Object.assign(contactProfiles, {
   3: {
     email: 'kim.meotsa@example.com',
     location: '대한민국 서울',
-    localTime: '05:32 PM · KST',
+    get localTime() {
+      return liveLocalTime('KR');
+    },
     role: 'Frontend Engineer of APEX Company',
     phone: '010-4567-1209',
     coverImage: profileBanner,
@@ -269,7 +298,9 @@ Object.assign(contactProfiles, {
   4: {
     email: 'waguri.kaoruko@example.com',
     location: '일본 도쿄',
-    localTime: '17:32 PM · JST',
+    get localTime() {
+      return liveLocalTime('JP');
+    },
     role: 'Product Manager of APEX Company',
     phone: '123-456-2104',
     coverImage: profileBanner,
@@ -291,7 +322,9 @@ Object.assign(contactProfiles, {
   5: {
     email: 'jason@example.com',
     location: '영국 런던',
-    localTime: '09:32 AM · GMT',
+    get localTime() {
+      return liveLocalTime('GB');
+    },
     role: 'Design Lead of APEX Company',
     phone: '123-456-2105',
     coverImage: profileBanner,

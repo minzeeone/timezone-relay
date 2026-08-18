@@ -1,5 +1,5 @@
 import waguriKaorukoAvatar from '../assets/waguri-kaoruko.jpg';
-import { analyzeTiming } from '../utils/timing.js';
+import { presenceOf } from '../utils/timing.js';
 
 export const activeHandoffs = [
   { title: '분석 알고리즘 개발', team: 'MX 개발팀', status: '진행중', icon: 'bi-bar-chart-fill' },
@@ -13,10 +13,8 @@ export const activeHandoffs = [
  * 근무중 / 근무종료 만 Border 01(지리)의 실시간 계산으로 판정합니다.
  */
 function buildRecipientMeta({ countryCode, cityLabel, fixedState }) {
-  const timing = analyzeTiming(countryCode);
-  const state = fixedState ?? (timing.isWorkHours ? '근무중' : '근무종료');
-  const localClock = timing.localTime.slice(11); // 'YYYY-MM-DD HH:mm' → 'HH:mm'
-  return `${state} - ${localClock} ${cityLabel}`;
+  const { state, clock } = presenceOf(countryCode, fixedState);
+  return `${state} - ${clock} ${cityLabel}`;
 }
 
 /**

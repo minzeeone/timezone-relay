@@ -8,14 +8,29 @@ import { useTimelineRangeDrag } from '../../hooks/useTimelineRangeDrag.js';
 import { getCountryFlagClass } from '../../utils/country.js';
 import { calculateTimelineMemberMetrics } from '../../utils/timelinePosition.js';
 
-const calendarWeeks = [
-  ['26', '27', '28', '29', '30', '31', '1'],
-  ['2', '3', '4', '5', '6', '7', '8'],
-  ['9', '10', '11', '12', '13', '14', '15'],
-  ['16', '17', '18', '19', '20', '21', '22'],
-  ['23', '24', '25', '26', '27', '28', '29'],
-  ['30', '31', '1', '2', '3', '4', '5'],
-];
+/**
+ * 달력 한 판(6주 x 7일)을 만듭니다.
+ *
+ * 원래는 2026년 8월 날짜가 문자열로 박혀 있어서 이전/다음 달로 넘길 수 없었습니다.
+ * 앞뒤로 남는 칸은 이웃 달 날짜로 채우고 inMonth: false 로 표시합니다.
+ */
+const buildCalendarWeeks = (year, monthIndex) => {
+  const startOffset = new Date(year, monthIndex, 1).getDay(); // 일요일 시작
+  const weeks = [];
+
+  for (let weekIndex = 0; weekIndex < 6; weekIndex += 1) {
+    const week = [];
+
+    for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
+      const date = new Date(year, monthIndex, 1 - startOffset + weekIndex * 7 + dayIndex);
+      week.push({ day: String(date.getDate()), inMonth: date.getMonth() === monthIndex, date });
+    }
+
+    weeks.push(week);
+  }
+
+  return weeks;
+};
 
 const TIMELINE_FOCUS_START_HOUR = 16;
 const TIMELINE_DAY_START_HOUR = 0;
@@ -179,6 +194,10 @@ const edgeTypes = {
 export function TeamSchedule() {
   const [collapsedFilters, setCollapsedFilters] = useState({ teams: false, projects: false });
   const [selectedDate, setSelectedDate] = useState(() => new Date(BASE_SCHEDULE_DATE));
+  // 달력에 지금 펼쳐 보이는 달 (선택한 날짜와 따로 움직입니다)
+  const [viewMonth, setViewMonth] = useState(
+    () => new Date(BASE_SCHEDULE_DATE.getFullYear(), BASE_SCHEDULE_DATE.getMonth(), 1),
+  );
   // 현재 시각. 1분마다 갱신해서 팀원 상태(근무중/퇴근/공휴일)가 실제로 흐르게 합니다.
   const [nowTick, setNowTick] = useState(() => new Date());
   const timelineRef = useRef(null);
@@ -363,25 +382,31 @@ export function TeamSchedule() {
 
   const selectedDateLabel = useMemo(() => formatScheduleDate(selectedDate), [selectedDate]);
   const relativeDayLabel = useMemo(() => formatRelativeDayLabel(selectedDate, BASE_SCHEDULE_DATE), [selectedDate]);
-  const isSelectedAugust2026 = selectedDate.getFullYear() === 2026 && selectedDate.getMonth() === 7;
-  const selectedCalendarDay = isSelectedAugust2026 ? String(selectedDate.getDate()) : '';
+  const calendarWeeks = useMemo(
+    () => buildCalendarWeeks(viewMonth.getFullYear(), viewMonth.getMonth()),
+    [viewMonth],
+  );
+  const calendarLabel = `${viewMonth.getFullYear()}년 ${viewMonth.getMonth() + 1}월`;
+  const shiftViewMonth = (delta) =>
+    setViewMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
+
   const shiftSelectedDate = (days) => setSelectedDate((currentDate) => addDays(currentDate, days));
-  const selectAugustDate = (day, isMuted) => {
-    if (isMuted) return;
-    setSelectedDate(new Date(2026, 7, Number(day)));
+  const selectCalendarDate = (cell) => {
+    if (!cell.inMonth) return;
+    setSelectedDate(new Date(cell.date));
   };
 
   return (
     <main className="team-schedule" aria-label="팀 일정">
       <aside className="schedule-sidebar">
-        <section className="schedule-card schedule-calendar" aria-label="2026년 8월 달력">
+        <section className="schedule-card schedule-calendar" aria-label={`${calendarLabel} 달력`}>
           <header>
-            <strong>2026년 8월</strong>
+            <strong>{calendarLabel}</strong>
             <div>
-              <button type="button" aria-label="이전 달">
+              <button type="button" aria-label="이전 달" onClick={() => shiftViewMonth(-1)} data-no-timeline-drag>
                 <i className="bi bi-chevron-left" />
               </button>
-              <button type="button" aria-label="다음 달">
+              <button type="button" aria-label="다음 달" onClick={() => shiftViewMonth(1)} data-no-timeline-drag>
                 <i className="bi bi-chevron-right" />
               </button>
             </div>
@@ -393,18 +418,17 @@ export function TeamSchedule() {
           </div>
           <div className="calendar-grid">
             {calendarWeeks.flatMap((week, weekIndex) =>
-              week.map((day, dayIndex) => {
-                const isMuted = (weekIndex === 0 && day !== '1') || (weekIndex === 5 && Number(day) < 6);
-                const isToday = !isMuted && day === selectedCalendarDay;
+              week.map((cell, dayIndex) => {
+                const isSelected = cell.inMonth && formatDateKey(cell.date) === selectedDateKey;
 
                 return (
                   <button
-                    className={`${isMuted ? 'muted' : ''} ${isToday ? 'today' : ''}`}
+                    className={`${cell.inMonth ? '' : 'muted'} ${isSelected ? 'today' : ''}`}
                     key={`${weekIndex}-${dayIndex}`}
                     type="button"
-                    onClick={() => selectAugustDate(day, isMuted)}
+                    onClick={() => selectCalendarDate(cell)}
                   >
-                    {day}
+                    {cell.day}
                   </button>
                 );
               })

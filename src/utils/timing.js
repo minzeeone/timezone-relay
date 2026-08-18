@@ -10,14 +10,14 @@
  */
 
 export const COUNTRY_DB = {
-  KR: { name: '대한민국', zone: 'Asia/Seoul', holidays: ['01-01', '03-01', '08-15', '10-03'] },
-  US: { name: '미국', zone: 'America/New_York', holidays: ['07-04', '12-25', '01-01'] },
-  GB: { name: '영국', zone: 'Europe/London', holidays: ['12-25', '12-26', '01-01'] },
-  UK: { name: '영국', zone: 'Europe/London', holidays: ['12-25', '12-26', '01-01'] },
-  DE: { name: '독일', zone: 'Europe/Berlin', holidays: ['10-03', '12-25', '01-01'] },
-  JP: { name: '일본', zone: 'Asia/Tokyo', holidays: ['01-01', '05-03', '11-03'] },
-  SG: { name: '싱가포르', zone: 'Asia/Singapore', holidays: ['08-09', '12-25', '01-01'] },
-  RU: { name: '러시아', zone: 'Europe/Moscow', holidays: ['01-01', '05-09', '06-12'] },
+  KR: { name: '대한민국', zone: 'Asia/Seoul', holidays: ['01-01', '03-01', '08-15', '10-03'], abbr: 'KST' },
+  US: { name: '미국', zone: 'America/New_York', holidays: ['07-04', '12-25', '01-01'], abbr: 'ET' },
+  GB: { name: '영국', zone: 'Europe/London', holidays: ['12-25', '12-26', '01-01'], abbr: 'GMT' },
+  UK: { name: '영국', zone: 'Europe/London', holidays: ['12-25', '12-26', '01-01'], abbr: 'GMT' },
+  DE: { name: '독일', zone: 'Europe/Berlin', holidays: ['10-03', '12-25', '01-01'], abbr: 'CET' },
+  JP: { name: '일본', zone: 'Asia/Tokyo', holidays: ['01-01', '05-03', '11-03'], abbr: 'JST' },
+  SG: { name: '싱가포르', zone: 'Asia/Singapore', holidays: ['08-09', '12-25', '01-01'], abbr: 'SGT' },
+  RU: { name: '러시아', zone: 'Europe/Moscow', holidays: ['01-01', '05-09', '06-12'], abbr: 'MSK' },
 };
 
 /**
@@ -96,6 +96,44 @@ export function analyzeTiming(countryCode, at = new Date()) {
     timingDiagnosis: '상대방이 현재 데스크에서 근무 중인 최적의 골든 타임입니다.',
     responseExpectation: '수 분 내 실시간 확인 및 빠른 피드백을 기대할 수 있습니다.',
     suggestion: '현재 업무 시간 중 공유해 드리는 건으로, 편하신 때 확인 부탁드립니다.',
+  };
+}
+
+/**
+ * 팀원 목록·프로필에 표시할 현재 상태와 현지 시각을 만듭니다.
+ *
+ * 회의중 / 자리비움 처럼 캘린더에서 오는 상태는 타임존으로 알 수 없으므로
+ * fixedState 로 넘기면 그대로 씁니다. 넘기지 않으면 업무시간 여부로 판정합니다.
+ *
+ * @returns {{ state: string, clock: string, clock12: string, zoneAbbr: string }}
+ */
+export function presenceOf(countryCode, fixedState) {
+  const info = COUNTRY_DB[countryCode] ?? COUNTRY_DB.KR;
+  const timing = analyzeTiming(countryCode);
+  const now = new Date();
+
+  const clock12 = new Intl.DateTimeFormat('en-US', {
+    timeZone: info.zone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  }).format(now);
+
+  // 'EDT', 'KST' 같은 타임존 약어를 뽑습니다.
+  // en-US 기준이라 미국 밖은 'GMT+9' 처럼 오프셋으로 나오는데,
+  // 그럴 때만 COUNTRY_DB 의 abbr(KST, JST, MSK ...)로 바꿔 읽기 쉽게 합니다.
+  // 미국은 Intl 이 EDT/EST 를 계절에 맞게 주므로 그대로 씁니다.
+  const intlAbbr =
+    new Intl.DateTimeFormat('en-US', { timeZone: info.zone, timeZoneName: 'short' })
+      .formatToParts(now)
+      .find((part) => part.type === 'timeZoneName')?.value ?? '';
+  const zoneAbbr = intlAbbr.startsWith('GMT') ? info.abbr ?? intlAbbr : intlAbbr;
+
+  return {
+    state: fixedState ?? (timing.isWorkHours ? '근무중' : '근무종료'),
+    clock: timing.localTime.slice(11), // 'YYYY-MM-DD HH:mm' → 'HH:mm'
+    clock12,
+    zoneAbbr,
   };
 }
 
