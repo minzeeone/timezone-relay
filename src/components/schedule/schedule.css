@@ -1,0 +1,899 @@
+.apex-window.view-schedule {
+  position: relative;
+  background:
+    radial-gradient(circle at 28% 88%, rgba(255, 112, 68, 0.2), transparent 29%),
+    radial-gradient(circle at 68% 54%, rgba(255, 112, 68, 0.11), transparent 26%),
+    linear-gradient(180deg, rgba(6, 6, 7, 0.95) 0%, rgba(7, 7, 8, 0.92) 58%, rgba(62, 25, 16, 0.84) 100%);
+}
+
+.apex-window.view-schedule .topbar {
+  grid-template-columns: 210px 472px 1fr;
+}
+
+.apex-window.view-schedule .topbar h2 {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.team-schedule {
+  --schedule-ui-scale: 0.94;
+  --schedule-right-gutter: 104px;
+
+  position: relative;
+  display: grid;
+  grid-column: 2 / -1;
+  grid-row: 2;
+  grid-template-columns: minmax(280px, 342px) minmax(0, 1fr);
+  gap: clamp(26px, 3vw, 44px);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(8px, 1.4vh, 20px) 0 0;
+  overflow: hidden;
+  transform: scale(var(--schedule-ui-scale));
+  transform-origin: left top;
+  width: calc((100% - var(--schedule-right-gutter)) / var(--schedule-ui-scale));
+  animation: panelRise 520ms var(--ease-out) both;
+}
+
+.schedule-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  padding-right: 10px;
+  margin-right: -10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.schedule-sidebar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.schedule-card {
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(25, 25, 27, 0.42), rgba(16, 13, 13, 0.48));
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  animation: scheduleCardIn 520ms var(--ease-out) both;
+}
+
+.schedule-card:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.schedule-card:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.schedule-calendar {
+  min-height: 330px;
+  padding: 22px 28px;
+}
+
+.schedule-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.schedule-card header strong {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.schedule-card header div {
+  display: flex;
+  gap: 16px;
+}
+
+.schedule-card header button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 50%;
+  color: #f7f7f8;
+  font-size: 20px;
+  transition: transform 170ms var(--ease-snap), background 170ms ease;
+}
+
+.schedule-card header button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.schedule-filter header button i {
+  transition: transform 220ms var(--ease-snap);
+}
+
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  justify-items: center;
+}
+
+.calendar-weekdays {
+  margin-bottom: 12px;
+  color: #f2f2f4;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.calendar-grid {
+  row-gap: 8px;
+}
+
+.calendar-grid button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  color: #f8f8f9;
+  font-size: 17px;
+  font-weight: 520;
+  transition: transform 170ms var(--ease-snap), background 170ms ease, color 170ms ease;
+}
+
+.calendar-grid button:hover {
+  background: rgba(255, 255, 255, 0.09);
+  transform: scale(1.07);
+}
+
+.calendar-grid button.muted {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.calendar-grid button.today {
+  color: #fff;
+  background: linear-gradient(145deg, #b85a34, #8e3c22);
+  box-shadow: 0 8px 22px rgba(255, 119, 69, 0.2);
+}
+
+.schedule-filter {
+  min-height: 172px;
+  padding: 24px 28px;
+  overflow: hidden;
+  transition: min-height 240ms var(--ease-out), padding 240ms var(--ease-out);
+}
+
+.schedule-projects {
+  min-height: 188px;
+}
+
+.schedule-filter-list {
+  display: grid;
+  gap: 11px;
+  max-height: 180px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-height 240ms var(--ease-out), opacity 180ms ease, transform 240ms var(--ease-out);
+  transform: translateY(0);
+}
+
+.schedule-filter.is-collapsed {
+  min-height: 74px;
+}
+
+.schedule-filter.is-collapsed header {
+  margin-bottom: 0;
+}
+
+.schedule-filter.is-collapsed header button i {
+  transform: rotate(-90deg);
+}
+
+.schedule-filter.is-collapsed .schedule-filter-list {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+}
+
+.schedule-filter-list button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: 100%;
+  color: #f7f7fb;
+  font-size: 17px;
+  font-weight: 620;
+  line-height: 1.15;
+  transition: color 170ms ease, transform 170ms var(--ease-snap);
+}
+
+.schedule-filter-list button:hover {
+  color: #ff926c;
+  transform: translateX(3px);
+}
+
+.schedule-flag {
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 21px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.schedule-flag::after {
+  color: #111;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.schedule-flag.jp::before {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e33b45;
+  content: '';
+}
+
+.schedule-flag.us {
+  background: repeating-linear-gradient(180deg, #c83b49 0 2px, #fff 2px 4px);
+}
+
+.schedule-flag.us::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15px;
+  height: 12px;
+  background: #284b9b;
+  content: '';
+}
+
+.schedule-flag.us::after {
+  position: absolute;
+  left: 3px;
+  content: 'US';
+  color: #fff;
+}
+
+.schedule-flag.gb {
+  background: linear-gradient(135deg, #1f4fa3 0 42%, #fff 42% 48%, #d93a40 48% 54%, #fff 54% 60%, #1f4fa3 60%);
+}
+
+.schedule-flag.gb::after {
+  content: 'GB';
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.project-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--dot-color);
+}
+
+.schedule-main {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  padding-right: 20px;
+  overflow: hidden;
+}
+
+.schedule-day-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 66px;
+  padding-left: 2px;
+  animation: dashboardFadeLift 500ms 80ms var(--ease-out) both;
+}
+
+.schedule-day-head h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(34px, 2.6vw, 44px);
+  font-weight: 780;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.today-pill {
+  display: inline-flex;
+  min-width: 76px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: #17100d;
+  background: #ff7748;
+  box-shadow: 0 10px 24px rgba(255, 119, 72, 0.18);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.schedule-day-head > button:not(.today-pill) {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 20px;
+  transition: background 170ms ease, transform 170ms var(--ease-snap);
+}
+
+.schedule-day-head > button:not(.today-pill):hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.schedule-timeline {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  margin-top: -18px;
+  padding-top: 26px;
+  padding-bottom: 14px;
+  overflow-x: auto;
+  overflow-y: auto;
+  cursor: ew-resize;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  user-select: none;
+  scroll-behavior: smooth;
+  scrollbar-color: rgba(255, 119, 72, 0.7) rgba(255, 255, 255, 0.06);
+  scrollbar-width: thin;
+}
+
+.schedule-timeline::-webkit-scrollbar {
+  width: 0;
+  height: 9px;
+}
+
+.schedule-timeline::-webkit-scrollbar:vertical {
+  width: 0;
+}
+
+.schedule-timeline::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.schedule-timeline::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 119, 72, 0.48), rgba(255, 119, 72, 0.9));
+  box-shadow: 0 0 14px rgba(255, 119, 72, 0.16);
+}
+
+.schedule-timeline::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, rgba(255, 139, 92, 0.62), rgba(255, 139, 92, 0.98));
+}
+
+.schedule-timeline.is-dragging {
+  cursor: ew-resize;
+}
+
+.timeline-scale-plane {
+  position: relative;
+  width: var(--timeline-width, 100%);
+  min-width: var(--timeline-width, 100%);
+  height: 560px;
+  min-height: 100%;
+  transition: width 220ms var(--ease-out);
+}
+
+.timeline-empty-state {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 12px 18px;
+  color: rgba(255, 255, 255, 0.74);
+  background: rgba(16, 10, 8, 0.52);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-size: 15px;
+  font-weight: 620;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.timeline-empty-state i {
+  color: #ff7748;
+  font-size: 18px;
+}
+
+.timeline-range-indicator {
+  position: absolute;
+  top: 8px;
+  right: 28px;
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 119, 72, 0.28);
+  border-radius: 999px;
+  padding: 7px 12px;
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(20, 10, 8, 0.54);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 13px;
+  font-weight: 650;
+  opacity: 0.82;
+  pointer-events: none;
+  transform: translateY(0);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.schedule-main:focus-within .timeline-range-indicator {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.timeline-range-indicator span {
+  color: #ff8a5f;
+}
+
+.time-marker {
+  position: absolute;
+  top: 12px;
+  left: var(--x);
+  bottom: 38px;
+  width: 2px;
+  color: #ff7748;
+  transition: left 160ms var(--ease-out), opacity 160ms ease;
+}
+
+.time-marker strong {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  color: #ff7748;
+  font-size: 22px;
+  font-weight: 640;
+  transform: translateX(-50%);
+}
+
+.time-marker.is-first strong {
+  left: 0;
+  transform: none;
+}
+
+.time-marker.is-last strong {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.time-marker span {
+  position: absolute;
+  top: 36px;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 119, 72, 0.66), rgba(255, 119, 72, 0.38));
+  transform: translateX(-50%);
+}
+
+.time-hover-marker {
+  position: absolute;
+  top: 12px;
+  left: var(--x);
+  bottom: 38px;
+  z-index: 7;
+  width: 2px;
+  color: #fff;
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: timelineHoverIn 140ms ease both;
+}
+
+.time-hover-marker strong {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border: 1px solid rgba(255, 119, 72, 0.38);
+  border-radius: 999px;
+  padding: 4px 9px;
+  color: #fff;
+  background: rgba(18, 12, 10, 0.78);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2), 0 0 18px rgba(255, 119, 72, 0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 15px;
+  font-weight: 720;
+  line-height: 1;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.time-hover-marker span {
+  position: absolute;
+  top: 34px;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 119, 72, 0.2));
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.14);
+  transform: translateX(-50%);
+}
+
+.shift-bar {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  min-height: 84px;
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+  border-right: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  color: var(--shift-text, #fff);
+  background: var(--shift-background);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 14px 26px rgba(0, 0, 0, 0.18);
+  animation: shiftBarIn 620ms var(--ease-out) both;
+}
+
+.shift-bar.align-right {
+  justify-content: flex-end;
+  padding-right: 22px;
+}
+
+.shift-bar.align-right .shift-copy {
+  text-align: right;
+}
+
+.shift-bar.align-left {
+  gap: 20px;
+  padding-left: 0;
+}
+
+.shift-copy {
+  display: grid;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.shift-copy strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.shift-copy small {
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.timeline-avatar {
+  position: relative;
+  display: grid;
+  width: 66px;
+  height: 66px;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  color: #16110e;
+  background: var(--avatar-accent, #ffd36b);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--avatar-accent, #ffd36b) 72%, transparent), 0 16px 30px rgba(0, 0, 0, 0.28);
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.timeline-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.timeline-avatar.right {
+  margin-left: 18px;
+}
+
+.timeline-avatar.left {
+  margin-right: 0;
+}
+
+.timeline-avatar.right:has(img) {
+  margin-left: 20px;
+}
+
+.timeline-flow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: transparent;
+  pointer-events: none;
+}
+
+.timeline-flow .react-flow__renderer,
+.timeline-flow .react-flow__pane,
+.timeline-flow .react-flow__viewport,
+.timeline-flow .react-flow__node,
+.timeline-flow .react-flow__edge {
+  pointer-events: none;
+}
+
+.timeline-flow .react-flow__node {
+  z-index: 4;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  overflow: visible;
+  transition: transform 160ms var(--ease-out), width 160ms var(--ease-out), height 160ms var(--ease-out);
+  will-change: transform;
+}
+
+.timeline-flow .shift-bar {
+  position: relative;
+  top: auto;
+  left: auto;
+  width: var(--shift-width);
+  min-height: 84px;
+  max-width: none;
+  overflow: visible;
+  transition: width 160ms var(--ease-out), filter 160ms ease;
+}
+
+.timeline-flow .react-flow__edges {
+  z-index: 6;
+}
+
+.timeline-flow .react-flow__nodes {
+  z-index: 5;
+}
+
+.schedule-timeline.full-day .timeline-flow .shift-bar {
+  top: auto;
+  left: auto;
+  width: var(--shift-width);
+}
+
+.timeline-flow .schedule-handoff-edge {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
+  z-index: 8;
+}
+
+.timeline-flow .react-flow__edge-path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 160ms ease, stroke-width 160ms ease, opacity 160ms ease;
+}
+
+.schedule-timeline.is-dragging .time-marker,
+.schedule-timeline.is-dragging .timeline-flow .react-flow__node,
+.schedule-timeline.is-dragging .timeline-flow .shift-bar {
+  transition-duration: 90ms;
+}
+
+.timeline-flow .timeline-flow-handle {
+  z-index: 5;
+  width: 1px;
+  height: 1px;
+  border: 0;
+  border-radius: 50%;
+  opacity: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.timeline-flow .react-flow__handle-left.timeline-flow-handle {
+  left: -6px;
+}
+
+.timeline-flow .react-flow__handle-right.timeline-flow-handle {
+  right: -6px;
+}
+
+.timeline-flow .react-flow__handle-bottom.timeline-flow-handle {
+  bottom: -6px;
+}
+
+.timeline-flow-plus {
+  position: relative;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 50%;
+  color: #1a1a1a;
+  background: #fff;
+  font-size: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.timeline-connection-dot {
+  position: absolute;
+  z-index: 10;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.44), 0 0 10px rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+}
+
+.timeline-connection-dot.right {
+  top: 50%;
+  right: -6px;
+  transform: translateY(-50%);
+}
+
+.timeline-connection-dot.left {
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%);
+}
+
+@keyframes scheduleCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shiftBarIn {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateX(-18px) scaleX(0.96);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(0) scaleX(1);
+  }
+}
+
+@keyframes routeDraw {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 100% 0);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes timelineHoverIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (min-width: 981px) and (max-height: 940px) {
+  .team-schedule {
+    --schedule-ui-scale: 0.9;
+  }
+}
+
+@media (min-width: 981px) and (max-height: 860px) {
+  .team-schedule {
+    --schedule-ui-scale: 0.84;
+  }
+}
+
+@media (min-width: 981px) and (max-height: 780px) {
+  .team-schedule {
+    --schedule-ui-scale: 0.78;
+  }
+}
+
+@media (max-width: 1450px) {
+  .team-schedule {
+    grid-template-columns: minmax(270px, 330px) minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .schedule-calendar {
+    min-height: 310px;
+    padding: 20px 24px;
+  }
+
+  .schedule-card header strong {
+    font-size: 22px;
+  }
+
+  .calendar-grid button {
+    width: 32px;
+    height: 32px;
+    font-size: 17px;
+  }
+
+  .schedule-filter {
+    min-height: 160px;
+    padding: 22px 24px;
+  }
+
+  .schedule-filter.is-collapsed {
+    min-height: 74px;
+  }
+
+  .schedule-filter-list button {
+    font-size: 17px;
+  }
+
+  .time-marker strong {
+    font-size: 21px;
+  }
+
+  .shift-copy strong {
+    font-size: 20px;
+  }
+
+  .timeline-avatar {
+    width: 66px;
+    height: 66px;
+  }
+}
+
+@media (max-width: 980px) {
+  .team-schedule {
+    order: 3;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    overflow-y: auto;
+  }
+
+  .schedule-sidebar {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .schedule-calendar,
+  .schedule-filter {
+    min-height: auto;
+  }
+
+  .schedule-main {
+    min-height: 680px;
+  }
+
+  .schedule-timeline {
+    min-height: 620px;
+  }
+}
