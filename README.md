@@ -1,4 +1,4 @@
-# Timezone Relay - Border 2 언어파트
+# Timezone Relay - Border 2 언어파트 및 UX
 
 ## 블록 데이터 사용 방법
 
