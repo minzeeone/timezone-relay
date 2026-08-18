@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { presenceOf } from '../../utils/timing.js';
+import { handoffLabels, taskStateLabel } from '../../utils/handoffLabels.js';
 
 const preparationItems = [
   {
@@ -237,18 +238,18 @@ const TASK_PRIORITY_ORDER = {
  * Border 04 API 응답을 검토 화면의 항목 형태로 변환합니다.
  * 확정된 결정사항이 먼저 오고, 그 뒤에 남은 작업이 붙습니다.
  */
-function buildReviewTasks(briefing) {
+function buildReviewTasks(briefing, labels) {
   const decisions = (briefing.decisions ?? []).map((decision) => ({
-    state: '완료',
+    state: labels.done,
     title: decision.content,
     description: decision.detail || '',
     done: true,
   }));
 
   const tasks = (briefing.tasks ?? []).map((task) => ({
-    state: TASK_STATE_LABEL[task.status] ?? '진행중',
+    state: taskStateLabel(labels, task.status),
     title: task.content,
-    description: task.owner ? `담당 ${task.owner}` : '',
+    description: task.owner ? `${labels.ownerPrefix} ${task.owner}` : '',
     done: false,
   }));
 
@@ -258,9 +259,9 @@ function buildReviewTasks(briefing) {
   }));
 }
 
-function buildReviewStatuses(briefing) {
+function buildReviewStatuses(briefing, labels) {
   const decisions = (briefing.decisions ?? []).map((decision) => ({
-    state: '완료',
+    state: labels.done,
     title: decision.content,
     description: decision.detail || decision.source || '',
     done: true,
@@ -269,16 +270,16 @@ function buildReviewStatuses(briefing) {
   const blockers = (briefing.tasks ?? [])
     .filter((task) => task.status === 'blocked')
     .map((task) => ({
-      state: '미해결사항',
+      state: labels.unresolved,
       title: task.content,
-      description: task.source ? `출처: ${task.source}` : '',
+      description: task.source ? `${labels.sourcePrefix}: ${task.source}` : '',
       danger: true,
     }));
 
   return [...decisions, ...blockers];
 }
 
-function buildReviewPriorities(briefing) {
+function buildReviewPriorities(briefing, labels) {
   return [...(briefing.tasks ?? [])]
     .sort((currentTask, nextTask) => {
       const currentPriority = TASK_PRIORITY_ORDER[currentTask.status] ?? 99;
@@ -288,7 +289,7 @@ function buildReviewPriorities(briefing) {
     })
     .map((task) => ({
       title: task.content,
-      assignee: task.owner || '미정',
+      assignee: task.owner || labels.unassigned,
       source: task.source || '',
       status: task.status,
     }));
@@ -385,9 +386,11 @@ export function ShiftEndModal({
   // 실제 브리핑이 오면 목업 대신 그 결과로 검토 화면을 채웁니다.
   // 번역 보기일 때는 번역본을 덮어쓴 브리핑으로 화면을 만듭니다.
   const activeBriefing = isJapaneseReview ? mergeTranslation(briefing, translation) : briefing;
-  const liveReviewTasks = activeBriefing ? buildReviewTasks(activeBriefing) : null;
-  const liveReviewStatuses = activeBriefing ? buildReviewStatuses(activeBriefing) : null;
-  const liveReviewPriorities = activeBriefing ? buildReviewPriorities(activeBriefing) : null;
+  // 문서 안쪽 라벨도 인계자 언어로 바꿉니다. (번역 보기가 꺼져 있으면 한국어)
+  const labels = handoffLabels(recipientCountryCode, isJapaneseReview);
+  const liveReviewTasks = activeBriefing ? buildReviewTasks(activeBriefing, labels) : null;
+  const liveReviewStatuses = activeBriefing ? buildReviewStatuses(activeBriefing, labels) : null;
+  const liveReviewPriorities = activeBriefing ? buildReviewPriorities(activeBriefing, labels) : null;
   // 실제 브리핑이 있으면 항상 그걸 씁니다. (번역 보기면 위에서 이미 번역본이 덮여 있습니다)
   // 아래 목업들은 API 가 실패해 브리핑이 아예 없을 때만 쓰입니다.
   const reviewTasks = liveReviewTasks ?? (isJapaneseReview ? handoffReviewTasksJa : handoffReviewTasks);
@@ -690,39 +693,39 @@ export function ShiftEndModal({
         ) : isReviewStep ? (
           <div className={`shift-modal-content handoff-review ${isJapaneseReview ? 'translated-review' : ''}`} key="handoff-review">
             <header className="handoff-review-header">
-              <span>업무 인수인계서</span>
+              <span>{labels.documentTitle}</span>
               <strong>{reviewProjectName}</strong>
             </header>
             <section className="handoff-review-parties" aria-label="인수인계 참여자">
               <div>
-                <span>인수자</span>
+                <span>{labels.giver}</span>
                 <strong>김의중</strong>
-                <small>개발팀 프론트엔드</small>
+                <small>{labels.giverRole}</small>
                 <small>{handoffGiverLocalTime}</small>
               </div>
               <i className="bi bi-arrow-right" aria-hidden="true" />
               <div>
-                <span>인계자</span>
+                <span>{labels.receiver}</span>
                 <strong>{selectedMember.name}</strong>
-                <small>제품팀 PM</small>
+                <small>{labels.receiverRole}</small>
                 <small>{handoffRecipientLocalTime}</small>
               </div>
             </section>
             <div className="handoff-review-grid">
               <div className="handoff-review-column">
                 <section className="handoff-review-section">
-                  <h3>인수인계 업무</h3>
+                  <h3>{labels.handoffWork}</h3>
                   <p className="handoff-review-lead">
-                    {briefing ? `${reviewProjectName} 인수인계 요약` : 'AURORA 인증 시스템 개편'}
+                    {briefing ? labels.summaryTitle(reviewProjectName) : 'AURORA 인증 시스템 개편'}
                   </p>
                   <p>
                     {briefing
-                      ? `${reviewProjectName}에서 다음 시간대 팀이 이어받아야 할 업무 범위를 정리했습니다.`
+                      ? labels.summaryLead(reviewProjectName)
                       : '글로벌 사용자 인증 시스템을 기존 방식에서 OAuth 기반 인증 구조로 전환하는 프로젝트입니다.'}
                   </p>
                 </section>
                 <section className="handoff-review-section">
-                  <h3>담당 업무</h3>
+                  <h3>{labels.assignedTasks}</h3>
                   <div className="handoff-review-task-list">
                     {reviewTasks.map((task) => (
                       <article className={task.done ? 'done' : ''} key={task.number}>
@@ -739,7 +742,7 @@ export function ShiftEndModal({
               </div>
               <div className="handoff-review-column">
                 <section className="handoff-review-section">
-                  <h3>진행상황 및 미해결사항</h3>
+                  <h3>{labels.statusSection}</h3>
                   <p>
                     {activeBriefing?.summary ??
                       '인증 기능 개발과 API 연동은 완료됐으며, Production 배포를 준비하고 있습니다.'}
@@ -758,9 +761,9 @@ export function ShiftEndModal({
                   </div>
                   {briefing ? (
                     <p className="handoff-review-note">
-                      완료: 결정사항 {briefingDecisionCount}건
+                      {labels.decisionCount(briefingDecisionCount)}
                       <br />
-                      미해결: 막힌 작업 {briefingBlockedCount}건
+                      {labels.blockedCount(briefingBlockedCount)}
                     </p>
                   ) : (
                     <p className="handoff-review-note">
@@ -773,16 +776,16 @@ export function ShiftEndModal({
                   )}
                 </section>
                 <section className="handoff-review-section">
-                  <h3>추진계획 및 우선순위</h3>
+                  <h3>{labels.prioritySection}</h3>
                   <div className="handoff-review-priority-list">
                     {reviewPriorities.map((item) => (
                       <article key={`${item.status ?? 'mock'}-${item.title}-${item.assignee}`}>
                         <span />
                         <div>
                           <strong>{item.title}</strong>
-                          {item.status && <small>상태: {TASK_STATE_LABEL[item.status] ?? item.status}</small>}
-                          <small>담당자: {item.assignee}</small>
-                          {item.source && <small>출처: {item.source}</small>}
+                          {item.status && <small>{labels.statusPrefix}: {taskStateLabel(labels, item.status)}</small>}
+                          <small>{labels.assigneePrefix}: {item.assignee}</small>
+                          {item.source && <small>{labels.sourcePrefix}: {item.source}</small>}
                         </div>
                       </article>
                     ))}
