@@ -135,7 +135,7 @@ y = TIMELINE_ROW_TOP + row * TIMELINE_ROW_HEIGHT + yOffset
 - React Flow node를 `timelineMembers.map(...)`으로 자동 생성하도록 변경했습니다.
 - React Flow edge를 `handoff.targetId` 기준으로 자동 생성하도록 변경했습니다.
 - 블록 색상과 프로필 accent 색상을 CSS 고정값이 아니라 데이터의 `theme` 값으로 적용하도록 변경했습니다.
-- 기존 Follow-the-Sun 타임라인 UI 디자인은 유지했습니다.
+- 기존 타임존릴레이 타임라인 UI 디자인은 유지했습니다.
 
 ## 빌드 확인
 
