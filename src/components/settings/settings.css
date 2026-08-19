@@ -1,0 +1,602 @@
+﻿.apex-window.view-settings {
+  position: relative;
+  grid-template-columns: 210px minmax(0, 1fr);
+  grid-template-rows: 112px minmax(0, 1fr);
+  gap: 0;
+  background:
+    radial-gradient(circle at 46% 64%, rgba(255, 116, 70, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(5, 5, 5, 0.92) 0%, rgba(6, 6, 6, 0.9) 58%, rgba(65, 26, 16, 0.78) 100%);
+}
+
+.apex-window.view-settings::before {
+  position: absolute;
+  inset: 20% 12% 5% 8%;
+  content: '';
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 38% 72%, rgba(255, 119, 69, 0.18), transparent 30%),
+    radial-gradient(circle at 76% 88%, rgba(255, 119, 69, 0.1), transparent 24%);
+  filter: blur(28px);
+  animation: dashboardAmbientGlow 7.5s ease-in-out infinite;
+}
+
+.apex-window.view-settings .topbar {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: 210px minmax(0, 1fr) auto;
+  align-items: start;
+  padding-top: 16px;
+}
+
+.apex-window.view-settings .topbar h2 {
+  align-self: start;
+  margin: 0;
+  padding-top: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(34px, 2.35vw, 43px);
+  font-weight: 720;
+  letter-spacing: 0;
+}
+
+.apex-window.view-settings .top-actions {
+  display: none;
+}
+
+
+/* 탭과 설명을 한 줄에 놓아 서로 밀어내게 합니다.
+   예전에는 둘 다 position: absolute 라 서로를 몰라서 좁은 화면에서 겹쳤습니다. */
+.settings-header-row {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(16px, 2vw, 40px);
+  margin: -92px 0 8px 116px;
+  min-width: 0;
+}
+
+.settings-header-row > * {
+  min-width: 0;
+}
+
+/* 본문만 스크롤합니다. 화면 폭에 맞춰 늘고 줄어야 하므로 고정 px 를 쓰지 않습니다.
+   왼쪽 프로필 카드는 300~392px 사이, 오른쪽 패널은 남는 공간을 다 씁니다. */
+.settings-body {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  /* 1열 프로필 카드 / 2열 연결선(가변 간격) / 3열 설정 목록.
+     가운데를 clamp 로 두면 화면이 좁아질 때 간격이 먼저 줄어듭니다. */
+  grid-template-columns: minmax(280px, 392px) clamp(24px, 6vw, 150px) minmax(0, 1fr);
+  column-gap: clamp(12px, 1.5vw, 38px);
+  align-items: start;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.settings-page {
+  grid-column: 2 / -1;
+  grid-row: 2;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  /* 헤더를 음수 마진으로 위로 올리므로 여기서는 자르지 않습니다. */
+  overflow: visible;
+  padding: 10px clamp(20px, 2.5vw, 44px) 44px 0;
+  color: #f8f4f1;
+  animation: settingsIn 420ms var(--ease-out) both;
+}
+
+.settings-tabs {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  height: 48px;
+  /* 줄바꿈되면 아래 내용과 겹칩니다. 좁으면 가로로 스크롤시킵니다. */
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  z-index: 3;
+}
+
+.settings-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.settings-tabs button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 14px;
+  border-bottom: 2px solid transparent;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 20px;
+  font-weight: 560;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease, transform 180ms var(--ease-out);
+}
+
+.settings-tabs button:hover {
+  color: rgba(255, 255, 255, 0.86);
+  transform: translateY(-1px);
+}
+
+.settings-tabs button.active {
+  color: #ff7748;
+  border-bottom-color: #ff7748;
+  background: linear-gradient(180deg, rgba(255, 119, 72, 0.12), rgba(255, 119, 72, 0.02));
+}
+
+.settings-tabs i {
+  font-size: 22px;
+}
+
+.settings-copy {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  /* min-width 를 고정하면 좁은 화면에서 탭을 밀고 나갑니다. */
+  min-width: 0;
+  max-width: 520px;
+  color: #fff;
+}
+
+.settings-copy > i {
+  color: #ff7748;
+  font-size: 52px;
+  line-height: 1;
+}
+
+.settings-copy strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.settings-copy p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15px;
+  font-weight: 480;
+}
+
+.settings-preview {
+  grid-column: 1;
+  align-self: start;
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+}
+
+.settings-preview h3 {
+  margin: 0 0 2px 4px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 22px;
+  font-weight: 620;
+}
+
+.settings-profile-card,
+.settings-card {
+  border: 1px solid rgba(131, 61, 38, 0.28);
+  background: linear-gradient(145deg, rgba(30, 15, 12, 0.74), rgba(14, 12, 13, 0.78));
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.28), 0 0 22px rgba(255, 104, 58, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(18px) saturate(126%);
+  -webkit-backdrop-filter: blur(18px) saturate(126%);
+}
+
+.settings-profile-card {
+  overflow: hidden;
+  min-height: 600px;
+  border-radius: 18px;
+}
+
+.settings-profile-banner {
+  height: 160px;
+  overflow: hidden;
+}
+
+.settings-profile-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.settings-profile-body {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 56px 46px 28px;
+}
+
+.settings-preview-avatar {
+  position: absolute;
+  top: -44px;
+  left: 50px;
+  display: grid;
+  width: 82px;
+  height: 82px;
+  place-items: center;
+  border: 10px solid rgba(20, 14, 13, 0.95);
+  border-radius: 50%;
+  background: #fff1dc;
+  color: #1c0d07;
+  font-size: 34px;
+  font-weight: 720;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.34);
+}
+
+.settings-preview-avatar::after {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  width: 16px;
+  height: 16px;
+  content: '';
+  border: 3px solid rgba(20, 14, 13, 0.95);
+  border-radius: 50%;
+  background: #ff4040;
+}
+
+.settings-profile-body > strong {
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.settings-profile-body > small {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15px;
+  font-weight: 480;
+}
+
+.settings-profile-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 8px;
+}
+
+.settings-profile-pills span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.44);
+  color: #f7f4f0;
+  font-size: 14px;
+  font-weight: 560;
+}
+
+.settings-profile-pills i {
+  font-size: 16px;
+}
+
+.settings-profile-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.settings-profile-section b {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.settings-profile-section p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.settings-profile-section.social > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 28px;
+}
+
+.settings-profile-section.social span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 580;
+}
+
+.settings-profile-section.social i {
+  color: #fff;
+  font-size: 22px;
+}
+
+.settings-profile-section.social span:nth-child(2) i {
+  color: #52f3b0;
+}
+
+.settings-profile-section.social span:nth-child(3) i,
+.settings-profile-section.social span:nth-child(4) i {
+  color: #3aa5ff;
+}
+
+.settings-link-line {
+  --settings-connector: rgba(255, 119, 72, 0.42);
+  --settings-connector-dot: #ff784e;
+  grid-column: 2;
+  align-self: center;
+  position: relative;
+  height: 320px;
+  margin-top: 16px;
+  background: linear-gradient(
+    to bottom,
+    transparent 72px,
+    var(--settings-connector) 72px,
+    var(--settings-connector) 248px,
+    transparent 248px
+  ) right center / 1px 100% no-repeat;
+}
+
+.settings-link-line::before,
+.settings-link-line::after {
+  position: absolute;
+  right: -48px;
+  width: 68px;
+  height: 158px;
+  content: '';
+  border-color: var(--settings-connector);
+  color: var(--settings-connector);
+  pointer-events: none;
+}
+
+.settings-link-line::before {
+  top: 0px;
+  border-top: 1px solid var(--settings-connector);
+  border-left: 1px solid var(--settings-connector);
+  border-top-left-radius: 24px;
+}
+
+.settings-link-line::after {
+  bottom: 0px;
+  border-bottom: 1px solid var(--settings-connector);
+  border-left: 1px solid var(--settings-connector);
+  border-bottom-left-radius: 24px;
+}
+
+.settings-link-line span {
+  position: absolute;
+  top: 50%;
+  left: -45px;  
+  width: calc(118%);
+  height: 1px;
+  background: var(--settings-connector);
+  transform: translateY(-50%);
+}
+
+.settings-link-line span::before {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  content: '';
+  border-radius: 50%;
+  background: var(--settings-connector-dot);
+  box-shadow: 0 0 10px rgba(255, 119, 72, 0.22);
+  transform: translateY(-50%);
+}
+
+.settings-panel-list {
+  grid-column: 3;
+  align-self: start;
+  display: grid;
+  gap: 22px;
+  width: 100%;
+  min-width: 0;
+  padding-top: 40px;
+}
+
+.settings-card {
+  display: grid;
+  border-radius: 16px;
+  padding: 16px 30px;
+}
+
+.settings-row {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr) 98px;
+  gap: 20px;
+  align-items: center;
+  min-height: 62px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.settings-row > span {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 22px;
+  font-weight: 460;
+}
+
+.settings-row > strong {
+  justify-self: end;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.settings-language-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.settings-row em {
+  align-self: center;
+  justify-self: end;
+  width: 34px;
+  height: 24px;
+  margin-right: 0;
+  overflow: hidden;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #fff 0 48%, #d9232e 48% 54%, #fff 54% 100%);
+  color: #18214b;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 24px;
+  text-align: center;
+}
+
+.settings-row button {
+  min-width: 98px;
+  min-height: 36px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.settings-row button:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
+}
+
+.settings-social-icons {
+  justify-self: end;
+  display: inline-flex;
+  gap: 14px;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 27px;
+}
+
+.work-hours {
+  padding-block: 4px;
+}
+
+@keyframes settingsIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 1480px 브레이크포인트에서 3컬럼 고정값으로 되돌리던 규칙을 지웠습니다.
+   이제 기본 그리드가 minmax/clamp 라 폭에 따라 알아서 줄어듭니다. */
+
+@media (max-width: 1180px) {
+  /* 좁아지면 설명 문구는 접고 아이콘과 제목만 남깁니다. */
+  .settings-copy p {
+    display: none;
+  }
+}
+
+@media (max-width: 1240px) {
+  .apex-window.view-settings {
+    grid-template-rows: 118px minmax(0, 1fr);
+  }
+
+  /* 이 폭부터는 좌우 2단이 좁아서, 프로필 카드와 설정 목록을 위아래로 쌓습니다. */
+  /* 좁아지면 연결선을 접고 위아래 1단으로 쌓습니다. */
+  .settings-body {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 22px;
+  }
+
+  .settings-preview,
+  .settings-panel-list {
+    grid-column: 1;
+  }
+
+  .settings-header-row {
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+
+  .settings-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .settings-preview,
+  .settings-panel-list {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .settings-panel-list {
+    padding-top: 0;
+  }
+
+  .settings-link-line {
+    display: none;
+  }
+}edia (max-width: 1240px) {
+  .apex-window.view-settings {
+    grid-template-rows: 118px minmax(0, 1fr);
+  }
+
+  .settings-page {
+    grid-template-columns: minmax(280px, 390px) minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    row-gap: 22px;
+    overflow-y: auto;
+    padding-top: 72px;
+  }
+
+  .settings-tabs {
+    top: -94px;
+    left: 102px;
+    max-width: calc(100vw - 460px);
+    overflow-x: auto;
+  }
+
+  .settings-copy,
+  .settings-panel-list {
+    grid-column: 2;
+  }
+
+  .settings-copy {
+    position: static;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .settings-preview {
+    grid-row: 1 / 4;
+    width: 100%;
+  }
+
+  .settings-link-line {
+    display: none;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { AcronymText } from './components/AcronymText.jsx';
 import { Avatar } from './components/Avatar.jsx';
 import { HandoffDashboard } from './components/dashboard/HandoffDashboard.jsx';
@@ -11,6 +11,7 @@ import { handoffProjects, handoffRecipients } from './data/handoffFlowMock.js';
 import { findAcronymsInLines, mergeAcronyms } from './utils/acronyms.js';
 import { isClusteredMessage, shouldShowMessageTime } from './utils/messageGrouping.js';
 import { presenceOf } from './utils/timing.js';
+import profileBanner from './assets/profile-banner.jpg';
 import trLogo from './assets/TR_Logo.png';
 
 const viewFromLocation = () => {
@@ -25,6 +26,10 @@ const viewFromLocation = () => {
 
   if (hash === '#messenger' || hash === '#/messenger' || path === '/messenger') {
     return 'messenger';
+  }
+
+  if (hash === '#settings' || hash === '#/settings' || path === '/settings') {
+    return 'settings';
   }
 
   return 'dashboard';
@@ -57,31 +62,30 @@ const createJapaneseLocalVersion = (original = '', localizedText = '') => {
   const source = `${original} ${localizedText}`.toLowerCase();
 
   if (source.includes('aurora') && source.includes('iam')) {
-    return 'AuroraのデプロイがIAM権限の問題で止まっているため、本日のリリースは難しい見込みです。ご確認をお願いいたします。';
+    return 'Aurora の作業は IAM 権限の確認が必要です。';
   }
 
-  if (source.includes('tomorrow morning') || source.includes('내일') || source.includes('明日')) {
-    return 'はい、明日の午前中にお送りします。';
+  if (source.includes('tomorrow morning')) {
+    return '明日の午前中にお送りします。';
   }
 
-  if (source.includes('pr') || source.includes('review') || source.includes('검토')) {
-    return 'PRの内容をご確認いただき、必要なフィードバックをお願いいたします。';
+  if (source.includes('pr') || source.includes('review')) {
+    return 'PR のレビューをお願いします。';
   }
 
-  if (source.includes('deployment') || source.includes('release') || source.includes('배포')) {
-    return 'デプロイ状況を確認し、必要な対応を進めていただけますと幸いです。';
+  if (source.includes('deployment') || source.includes('release')) {
+    return 'デプロイ状況を確認してください。';
   }
 
-  return '内容をチームメンバーの現地語に合わせて、自然な日本語表現に変換しました。';
+  return localizedText || original;
 };
-
 const handoffDocumentTerms = [
   {
     acronym: 'AURORA #128',
-    fullForm: 'Aurora 작업 티켓 번호',
+    fullForm: 'Aurora 작업 추적 번호',
     explanation: 'Aurora 프로젝트에서 IAM Role 권한 문제를 추적하는 작업 항목입니다.',
     action: 'explain',
-    reason: '인수자가 원본 기록이나 이슈를 다시 찾아볼 때 기준점이 됩니다.',
+    reason: '인수자가 원본 기록이나 이슈를 다시 찾아볼 수 있는 기준점입니다.',
     tone: 'handoff',
   },
   {
@@ -95,9 +99,9 @@ const handoffDocumentTerms = [
   {
     acronym: 'Production',
     fullForm: 'Production environment',
-    explanation: '실제 사용자가 접속하는 운영 환경을 의미합니다.',
+    explanation: '실제 사용자가 접속하는 운영 환경을 뜻합니다.',
     action: 'keep',
-    reason: '개발팀과 제품팀 모두 자주 쓰는 운영 용어라 원문을 유지합니다.',
+    reason: '개발팀과 제품팀 모두 자주 쓰는 운영 용어이므로 유지합니다.',
     tone: 'handoff',
   },
   {
@@ -105,7 +109,7 @@ const handoffDocumentTerms = [
     fullForm: 'Pull Request #142',
     explanation: '코드 변경사항을 병합하기 전에 검토하는 요청 번호입니다.',
     action: 'explain',
-    reason: '검토해야 할 코드 변경 단위를 명확히 하기 위해 표시합니다.',
+    reason: '검토해야 할 코드 변경 범위를 명확히 하기 위해 표시합니다.',
     tone: 'handoff',
   },
   {
@@ -119,7 +123,7 @@ const handoffDocumentTerms = [
   {
     acronym: 'Platform',
     fullForm: 'Platform Team',
-    explanation: '공통 인프라, 권한, 배포 환경을 관리하는 팀을 의미합니다.',
+    explanation: '공통 인프라, 권한, 배포 환경을 관리하는 팀을 뜻합니다.',
     action: 'explain',
     reason: '현재 확인 대기 중인 팀을 정확히 이해해야 합니다.',
     tone: 'handoff',
@@ -143,17 +147,17 @@ const handoffDocumentTerms = [
   {
     acronym: 'API',
     fullForm: 'Application Programming Interface',
-    explanation: '서로 다른 시스템이나 화면이 데이터를 주고받기 위한 연결 규칙입니다.',
+    explanation: '서로 다른 시스템이 화면이나 데이터를 주고받기 위한 연결 규칙입니다.',
     action: 'explain',
-    reason: '엔지니어링 문맥에서는 유지하되 비개발자에게는 설명이 도움이 됩니다.',
+    reason: '원어는 유지하되 비개발자에게도 설명이 필요합니다.',
     tone: 'handoff',
   },
   {
     acronym: 'QA',
     fullForm: 'Quality Assurance',
-    explanation: '기능이 요구사항대로 동작하는지 검증하는 품질 확인 과정입니다.',
+    explanation: '기능이 요구사항대로 동작하는지 검증하고 품질을 확인하는 과정입니다.',
     action: 'explain',
-    reason: '다음 담당자가 해야 할 검증 업무를 이해하는 데 필요합니다.',
+    reason: '다음 담당자가 이어서 검증 업무를 이해하는 데 필요합니다.',
     tone: 'handoff',
   },
 ];
@@ -167,86 +171,45 @@ const languageFlagMap = {
 const handoffDocumentTermsJa = [
   {
     acronym: 'AURORA #128',
-    fullForm: 'Aurora作業チケット番号',
-    explanation: 'AuroraプロジェクトでIAM Role権限の問題を追跡する作業項目です。',
+    fullForm: 'Aurora issue',
+    explanation: 'Aurora project issue identifier. Keep it unchanged in localized handoff documents.',
     action: 'explain',
-    reason: '引き継ぎ先が元の記録やIssueを確認するときの基準になります。',
+    reason: 'Project issue IDs should remain traceable across teams.',
     tone: 'handoff',
   },
   {
     acronym: 'IAM Role',
     fullForm: 'Identity and Access Management Role',
-    explanation: 'クラウドリソースへアクセスできる権限をまとめた役割です。',
+    explanation: 'A permission role used to control access to production resources.',
     action: 'explain',
-    reason: 'Productionデプロイ停止の直接原因なので、文脈説明が必要です。',
+    reason: 'This is important context for production deployment blockers.',
     tone: 'handoff',
   },
   {
     acronym: 'Production',
-    fullForm: '本番環境',
-    explanation: '実際のユーザーが利用する運用環境を意味します。',
-    action: 'keep',
-    reason: '開発チームとプロダクトチームの両方で一般的に使うため、表記を維持します。',
-    tone: 'handoff',
-  },
-  {
-    acronym: 'PR #142',
-    fullForm: 'Pull Request #142',
-    explanation: 'コード変更をマージする前にレビューするためのリクエスト番号です。',
+    fullForm: 'Production environment',
+    explanation: 'The live service environment used by real users.',
     action: 'explain',
-    reason: '確認すべきコード変更の単位を明確にするために表示します。',
-    tone: 'handoff',
-  },
-  {
-    acronym: 'OAuth',
-    fullForm: 'Open Authorization',
-    explanation: 'パスワードを直接共有せず、安全に認証権限を委任する標準方式です。',
-    action: 'explain',
-    reason: '認証構造変更の中心になる技術用語です。',
-    tone: 'handoff',
-  },
-  {
-    acronym: 'Platform',
-    fullForm: 'Platform Team',
-    explanation: '共通インフラ、権限、デプロイ環境を管理するチームを指します。',
-    action: 'explain',
-    reason: '現在確認待ちになっている担当チームを正しく理解する必要があります。',
-    tone: 'handoff',
-  },
-  {
-    acronym: 'Aurora',
-    fullForm: 'Aurora Project',
-    explanation: 'グローバル認証システムを改修する社内プロジェクト名です。',
-    action: 'keep',
-    reason: '社内プロジェクト名なので翻訳せず、そのまま保持します。',
-    tone: 'handoff',
-  },
-  {
-    acronym: 'AURORA',
-    fullForm: 'Aurora Project',
-    explanation: 'グローバル認証システムを改修する社内プロジェクト名です。',
-    action: 'keep',
-    reason: '大文字で記録された社内プロジェクト表記です。',
+    reason: 'The business impact depends on the production deployment state.',
     tone: 'handoff',
   },
   {
     acronym: 'API',
     fullForm: 'Application Programming Interface',
-    explanation: '異なるシステムや画面がデータをやり取りするための接続ルールです。',
+    explanation: 'A software interface used for systems to communicate with each other.',
     action: 'explain',
-    reason: 'エンジニアリング文脈では保持しつつ、非エンジニアにも意味が伝わるよう補足します。',
+    reason: 'Useful for recipients who need implementation context.',
     tone: 'handoff',
   },
   {
     acronym: 'QA',
     fullForm: 'Quality Assurance',
-    explanation: '機能が要件どおりに動作するかを検証する品質確認プロセスです。',
+    explanation: 'A verification process for checking whether the product works as expected.',
     action: 'explain',
-    reason: '次の担当者が行う検証作業を理解するために必要です。',
+    reason: 'Clarifies the next validation step in the handoff.',
     tone: 'handoff',
   },
 ];
-
 const createHandoffDocumentPages = (handoff) => [
   {
     type: 'cover',
@@ -268,7 +231,7 @@ const createHandoffDocumentPages = (handoff) => [
     title: 'Completed work',
     icon: 'bi-check2-square',
     terms: handoffDocumentTerms,
-    body: ['오늘 완료된 작업과 담당 범위를 정리했습니다.'],
+    body: ['오늘 완료한 작업과 담당 범위를 정리했습니다.'],
     tasks: [
       { state: '완료', title: '로그인 UI 개편', desc: '신규 인증 플로우에 맞게 로그인 화면을 개선했습니다.' },
       { state: '완료', title: 'OAuth API 연동', desc: '프론트엔드와 신규 인증 API를 연결했습니다.' },
@@ -286,7 +249,7 @@ const createHandoffDocumentPages = (handoff) => [
     title: 'Next actions',
     icon: 'bi-arrow-up-right-circle',
     terms: handoffDocumentTerms,
-    body: ['다음 시간대 팀원이 바로 이어서 확인해야 할 작업입니다.'],
+    body: ['다음 시간대 팀이 바로 이어서 확인해야 할 작업입니다.'],
     tasks: [
       { state: '우선', title: 'IAM Role 권한 확인', desc: '담당자: John' },
       { state: '다음', title: 'Production 배포 재시도', desc: '담당자: 김의중' },
@@ -314,46 +277,46 @@ const createJapaneseHandoffDocumentPages = (handoff) => [
     icon: 'bi-layers',
     terms: handoffDocumentTerms,
     body: [
-      'Auroraは、既存の認証方式をOAuthベースの認証構造へ移行するプロジェクトです。',
-      'グローバルユーザー認証とAPI連携範囲を含み、現在はProductionデプロイ前の最終確認段階です。',
+      'Aurora 認証システムを OAuth ベースの認証構造へ移行するプロジェクトです。',
+      '認証機能の開発と API 連携は完了しており、Production 配布前の最終確認段階です。',
     ],
-    points: ['Project Aurora', 'OAuth認証構造', 'Productionデプロイ準備'],
+    points: ['Project Aurora', 'OAuth 認証構造', 'Production 配布準備'],
   },
   {
     title: '完了した作業',
     icon: 'bi-check2-square',
     terms: handoffDocumentTerms,
-    body: ['本日完了した作業と担当範囲を整理しました。'],
+    body: ['本日完了した作業と範囲を整理しました。'],
     tasks: [
-      { state: '完了', title: 'ログインUI改修', desc: '新しい認証フローに合わせてログイン画面を改修しました。' },
-      { state: '完了', title: 'OAuth API連携', desc: 'フロントエンドと新しい認証APIを接続しました。' },
-      { state: '完了', title: 'PR #142レビュー反映', desc: '認証機能変更に関するレビューコメントを反映しました。' },
+      { state: '完了', title: 'ログイン UI 改善', desc: '新しい認証フローに合わせてログイン画面を改善しました。' },
+      { state: '完了', title: 'OAuth API 連携', desc: 'フロントエンドと新しい認証 API を接続しました。' },
+      { state: '完了', title: 'PR #142 レビュー反映', desc: '認証機能変更に関するレビューコメントを反映しました。' },
     ],
   },
   {
-    title: 'ブロッカーと進捗状況',
+    title: 'ブロッカーと状況',
     icon: 'bi-exclamation-diamond',
     terms: handoffDocumentTerms,
-    body: ['ProductionデプロイはIAM Role権限の問題により保留中です。'],
-    points: ['影響: Aurora Production環境デプロイ停止', '状態: Platformチーム確認待ち', '関連作業: AURORA #128'],
+    body: ['Production 配布は IAM Role 権限の問題により保留中です。'],
+    points: ['影響: Aurora Production 配布停止', '状態: Platform チーム確認待ち', '関連作業: AURORA #128'],
   },
   {
     title: '次のアクション',
     icon: 'bi-arrow-up-right-circle',
     terms: handoffDocumentTerms,
-    body: ['次のタイムゾーンのメンバーがすぐに確認すべき作業です。'],
+    body: ['次のタイムゾーンのチームがすぐに確認すべき作業です。'],
     tasks: [
-      { state: '優先', title: 'IAM Role権限の確認', desc: '担当者: John' },
-      { state: '次', title: 'Productionデプロイの再試行', desc: '担当者: 김의중' },
-      { state: '確認', title: '最終認証フローQA', desc: '担当者: Alex' },
+      { state: '優先', title: 'IAM Role 権限確認', desc: '担当者: John' },
+      { state: '次', title: 'Production 配布再試行', desc: '担当者: 김의중' },
+      { state: '確認', title: '最終認証フロー QA', desc: '担当者: Alex' },
     ],
   },
   {
-    title: '추가 요청 사항',
+    title: '追加リクエスト',
     icon: 'bi-chat-left-text',
     terms: handoffDocumentTerms,
-    body: [handoff.additionalNote || '추가 요청 사항은 없습니다.'],
-    points: ['추가 요청 사항은 원문 그대로 유지됩니다.', '필요 시 메신저에서 바로 확인해 주세요.'],
+    body: [handoff.additionalNote || '追加リクエストはありません。'],
+    points: ['追加リクエストは原文のまま維持します。', '必要に応じてメッセンジャーで確認してください。'],
   },
 ];
 
@@ -367,6 +330,132 @@ const createLocalizedHandoffDocumentPages = (handoff, language) => {
   return createHandoffDocumentPages(handoff);
 };
 
+const settingsTabs = [
+  { id: 'personal', label: '개인', icon: 'bi-person' },
+  { id: 'workflow', label: '워크플로우', icon: 'bi-activity' },
+  { id: 'team', label: '팀', icon: 'bi-people' },
+  { id: 'environment', label: '환경설정', icon: 'bi-gear' },
+  { id: 'account', label: '계정', icon: 'bi-person-circle' },
+];
+
+function SettingsPanel() {
+  const profileTiming = presenceOf('KR');
+  const settingRows = [
+    { label: '이름', value: '김의중' },
+    { label: '이메일', value: 'roplekorea@example.com' },
+    { label: '시간대', value: '대한민국 서울 | KST' },
+    { label: '언어', value: '한국어', flag: 'KR' },
+  ];
+  const privacyRows = [
+    { label: '내 소개', value: '', action: '편집' },
+    { label: '소셜 연동 관리', value: '', action: '편집', socials: ['bi-telegram', 'bi-linkedin', 'bi-slack', 'bi-github'] },
+    { label: '프로필 정보 공개 여부', value: '전체 공개', action: '편집' },
+  ];
+
+  return (
+    <main className="settings-page" aria-label="설정">
+      {/* 탭과 설명을 한 줄로 묶습니다. 각각 absolute 로 떠 있으면 서로를 몰라서
+          화면이 좁아질 때 겹칩니다. flex 로 묶으면 서로 밀어냅니다. */}
+      <div className="settings-header-row">
+        <nav className="settings-tabs" aria-label="설정 분류">
+          {settingsTabs.map((tab) => (
+            <button className={tab.id === 'personal' ? 'active' : ''} type="button" key={tab.id}>
+              <i className={'bi ' + tab.icon} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <section className="settings-copy" aria-label="현재 설정 섹션">
+          <i className="bi bi-person" />
+          <div>
+            <strong>개인</strong>
+            <p>프로필과 근무 시간, 시간대 등 개인 업무 정보를 관리합니다.</p>
+          </div>
+        </section>
+      </div>
+
+      {/* 본문만 스크롤합니다. .settings-page 에 overflow 를 주면
+          위로 끌어올린 헤더(음수 마진)가 잘려 탭이 사라집니다. */}
+      <div className="settings-body">
+        <section className="settings-preview" aria-label="프로필 미리보기">
+          <h3>프로필 미리보기</h3>
+          <article className="settings-profile-card">
+            <div className="settings-profile-banner">
+              <img src={profileBanner} alt="프로필 배너" />
+            </div>
+            <div className="settings-profile-body">
+              <div className="settings-preview-avatar">
+                <span>김</span>
+              </div>
+              <strong>김의중</strong>
+              <small>roplekorea@example.com</small>
+              <div className="settings-profile-pills">
+                <span><i className="bi bi-globe2" /> 대한민국 서울</span>
+                <span><i className="bi bi-clock" /> {profileTiming.clock} - KST</span>
+              </div>
+              <div className="settings-profile-section">
+                <b>소개</b>
+                <p>Front Engineer of APEX Company<br />email: roplekorea@example.com<br />tel: 123-456-2101</p>
+              </div>
+              <div className="settings-profile-section social">
+                <b>소셜 연결</b>
+                <div>
+                  <span><i className="bi bi-github" /> Github</span>
+                  <span><i className="bi bi-slack" /> Slack</span>
+                  <span><i className="bi bi-linkedin" /> LinkedIn</span>
+                  <span><i className="bi bi-telegram" /> Telegram</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <div className="settings-link-line" aria-hidden="true"><span /></div>
+
+        <section className="settings-panel-list" aria-label="개인 설정 목록">
+          <article className="settings-card account-info">
+            {settingRows.map((row) => (
+              <div className="settings-row" key={row.label}>
+                <span>{row.label}</span>
+                <strong className={row.flag ? 'settings-language-value' : ''}>
+                  {row.flag && <em>{row.flag}</em>}
+                  {row.value}
+                </strong>
+                <button type="button">수정</button>
+              </div>
+            ))}
+          </article>
+
+          <article className="settings-card privacy-info">
+            {privacyRows.map((row) => (
+              <div className="settings-row" key={row.label}>
+                <span>{row.label}</span>
+                {row.socials ? (
+                  <div className="settings-social-icons">
+                    {row.socials.map((icon) => <i className={'bi ' + icon} key={icon} />)}
+                  </div>
+                ) : (
+                  <strong>{row.value}</strong>
+                )}
+                <button type="button">{row.action}</button>
+              </div>
+            ))}
+          </article>
+
+          <article className="settings-card work-hours">
+            <div className="settings-row">
+              <span>근무 시간</span>
+              <strong>08:30 - 17:30</strong>
+              <button type="button">편집</button>
+            </div>
+          </article>
+        </section>
+      </div>
+
+    </main>
+  );
+}
 function App() {
   const [contacts, setContacts] = useState(contactsSeed);
   const [selectedId, setSelectedId] = useState(1);
@@ -418,6 +507,7 @@ function App() {
   const isMessengerView = activeView === 'messenger';
   const isScheduleView = activeView === 'schedule';
   const isDashboardView = activeView === 'dashboard';
+  const isSettingsView = activeView === 'settings';
 
   // 헤더 날짜는 고정값이 아니라 오늘 날짜로 표시합니다.
   const todayLabel = useMemo(
@@ -556,7 +646,7 @@ function App() {
       try {
         data = responseText ? JSON.parse(responseText) : null;
       } catch {
-        throw new Error('API 응답을 읽을 수 없습니다. dev server를 재시작한 뒤 다시 시도해주세요.');
+        throw new Error('API 응답을 읽을 수 없습니다. dev server를 다시 실행한 뒤 다시 시도해 주세요.');
       }
 
       if (!response.ok) {
@@ -712,6 +802,13 @@ function App() {
     setChatOpen(false);
   };
 
+  const openSettings = () => {
+    setActiveView('settings');
+    replaceHash('#settings');
+    setProfileOpen(false);
+    setChatOpen(false);
+  };
+
   const closeShiftEndModal = () => {
     setShiftEndOpen(false);
     setShiftModalStep('confirm');
@@ -721,14 +818,6 @@ function App() {
     setHandoffBriefing(null);
     setHandoffBriefingError('');
   };
-
-  /**
-   * Border 04 (조직) — 실제 인수인계 브리핑을 생성합니다.
-   *
-   * 서버가 프로젝트별 수집 로그(Slack/GitHub/Notion)를 모아 AI 에 넘기고,
-   * 중복 제거 / 결정사항 / 작업사항 / 지난 브리핑 대비 변경점을 돌려줍니다.
-   * 실패해도 모달 흐름은 끊지 않고, 검토 단계에서 기존 목업으로 표시됩니다.
-   */
   const generateHandoffBriefing = async () => {
     setHandoffBriefing(null);
     setHandoffBriefingError('');
@@ -782,10 +871,10 @@ function App() {
           date: '8월 15일',
           timestamp: '2026.8.15 PM 9:26',
           from: '개발팀 프론트엔드 김의중',
-          cleanSummary: 'Aurora 인증 기능 개발은 대부분 완료됐지만, IAM 권한 문제로 Production 배포가 보류된 상태입니다.',
+          cleanSummary: 'Aurora 인증 기능 개발은 대부분 완료되었지만 IAM 권한 문제로 Production 배포가 보류된 상태입니다.',
           additionalNote: handoffAdditionalNote.trim(),
           route: '서울 → 도쿄',
-          summary: 'Aurora 인증 기능 개발은 대부분 완료됐지만, IAM 권한 문제로 Production 배포가 보류된 상태입니다.',
+          summary: 'Aurora 인증 기능 개발은 대부분 완료되었지만 IAM 권한 문제로 Production 배포가 보류된 상태입니다.',
           completed: 8,
           blockers: 4,
           actions: 2,
@@ -871,7 +960,7 @@ function App() {
                   <div className="handoff-cover-title">
                     <small>{activeHandoffDocument.handoff.projectName}</small>
                     <strong>
-                      {handoffDocumentLanguage === 'ja' ? '業務引き継ぎブリーフィング' : '업무 인수인계 브리핑'}
+                      {activeHandoffPages[0]?.title ?? '업무 인수인계 브리핑'}
                     </strong>
                   </div>
                   <span className="handoff-language-pill">
@@ -958,7 +1047,7 @@ function App() {
                   <i className="bi bi-chevron-right" />
                 </button>
               </div>
-              <div className="handoff-document-language-toggle" aria-label="인수인계서 언어 선택">
+              <div className="handoff-document-language-toggle" aria-label="인수인계 문서 언어 선택">
                 <button
                   className={handoffDocumentLanguage === 'ko' ? 'active' : ''}
                   type="button"
@@ -978,7 +1067,7 @@ function App() {
           </section>
         </div>
       )}
-      <section className={`apex-window ${isMessengerView ? 'view-messenger' : isScheduleView ? 'view-schedule' : 'view-dashboard'} ${chatOpen ? 'mobile-chat-open' : ''} ${isMessengerView && profileOpen ? 'profile-open' : ''}`}>
+      <section className={`apex-window ${isMessengerView ? 'view-messenger' : isScheduleView ? 'view-schedule' : isSettingsView ? 'view-settings' : 'view-dashboard'} ${chatOpen ? 'mobile-chat-open' : ''} ${isMessengerView && profileOpen ? 'profile-open' : ''}`}>
         <header className="topbar">
           <h1 className="brand-logo">
             <img src={trLogo} alt="Timezone Relay" />
@@ -987,6 +1076,8 @@ function App() {
             <h2>채팅</h2>
           ) : isScheduleView ? (
             <h2>팀 일정</h2>
+          ) : isSettingsView ? (
+            <h2>설정</h2>
           ) : (
             <div className="dashboard-org">
               <span>
@@ -999,13 +1090,13 @@ function App() {
             </div>
           )}
           <div className="top-actions">
-            {!isMessengerView && <span className="dashboard-date">{todayLabel}</span>}
+            {(isDashboardView || isScheduleView) && <span className="dashboard-date">{todayLabel}</span>}
             <button className="notification-button" type="button" aria-label="알림">
               <i className="bi bi-bell" />
               <span />
             </button>
             <button className="profile" type="button" aria-label="프로필 메뉴">
-              <span className="profile-avatar">👩🏼</span>
+              <span className="profile-avatar">김</span>
               <span className="profile-copy">
                 <strong>김의중</strong>
                 <small>개발팀</small>
@@ -1023,7 +1114,7 @@ function App() {
         )}
 
         <nav className="sidebar" aria-label="주요 메뉴">
-          <button className={isDashboardView ? 'selected' : ''} type="button" onClick={openDashboard} aria-label="인수인계 대시보드">
+          <button className={isDashboardView ? 'selected' : ''} type="button" onClick={openDashboard} aria-label="대시보드">
             <i className="bi bi-grid" />
           </button>
           <button className={isMessengerView ? 'selected' : ''} type="button" onClick={openMessenger} aria-label="채팅">
@@ -1032,19 +1123,20 @@ function App() {
           <button className={isScheduleView ? 'selected' : ''} type="button" onClick={openSchedule} aria-label="팀 일정">
             <i className="bi bi-calendar3" />
           </button>
-          <button type="button" aria-label="설정">
+          <button className={isSettingsView ? 'selected' : ''} type="button" onClick={openSettings} aria-label="설정">
             <i className="bi bi-gear" />
           </button>
         </nav>
 
         {isDashboardView && <HandoffDashboard data={handoffDashboardMock} onOpenMessenger={openMessenger} onOpenShiftEnd={() => setShiftEndOpen(true)} />}
         {isScheduleView && <TeamSchedule />}
+        {isSettingsView && <SettingsPanel />}
 
         {isMessengerView && (
           <>
         <aside className="message-list">
           <div className="panel-head">
-            <strong>메세지</strong>
+            <strong>메시지</strong>
             <div className="tools">
               <label className="search-control" aria-label="메시지 검색">
                 <i className="bi bi-search" />
@@ -1078,7 +1170,7 @@ function App() {
                 </span>
                 <span className="contact-meta">
                   <time>{formatContactTime(contact)}</time>
-                  <span className="star" onClick={(event) => toggleStar(event, contact.id)} role="button" tabIndex="0" aria-label="즐겨찾기">
+                  <span className="star" onClick={(event) => toggleStar(event, contact.id)} role="button" tabIndex="0" aria-label="利먭꺼李얘린">
                     <i className={`bi ${contact.starred ? 'bi-star-fill' : 'bi-star'}`} />
                   </span>
                 </span>
@@ -1097,7 +1189,7 @@ function App() {
               <button className="mobile-back" type="button" onClick={() => setChatOpen(false)} aria-label="채팅 목록으로 돌아가기">
                 <i className="bi bi-chevron-left" />
               </button>
-              <button className="chat-profile-trigger" type="button" onClick={() => setProfileOpen(true)} aria-label={`${selectedContact.name} 프로필 열기`}>
+              <button className="chat-profile-trigger" type="button" onClick={() => setProfileOpen(true)} aria-label={`${selectedContact.name} 프로필 열기`}> 
                 <Avatar contact={selectedContact} large />
                 <div>
                   <div className="name-line">
@@ -1168,7 +1260,7 @@ function App() {
                           <i className="bi bi-file-earmark-text" />
                           <span>
                             <strong>{message.handoff.projectName}</strong>
-                            <small>{message.handoff.recipientName} 님에게 전달됨</small>
+                            <small>{message.handoff.recipientName} 에게 전달됨</small>
                           </span>
                         </span>
                         <span className="folder-summary">{message.handoff.summary}</span>
@@ -1224,7 +1316,7 @@ function App() {
                     )}
                     {messageLocalization && openOriginalIds.includes(message.id) && (
                       <div className="original-message">
-                        <strong>입력 원문</strong>
+                        <strong>?낅젰 ?먮Ц</strong>
                         <p>{messageLocalization.original}</p>
                       </div>
                     )}
@@ -1240,9 +1332,9 @@ function App() {
               <form className="term-editor" onSubmit={saveUserAcronym}>
                 <div className="term-editor-head">
                   <span>
-                    <i className="bi bi-journal-plus" /> 용어 설명 추가
+                    <i className="bi bi-journal-plus" /> ?⑹뼱 ?ㅻ챸 異붽?
                   </span>
-                  <button type="button" onClick={closeTermEditor} aria-label="용어 설명 닫기">
+                  <button type="button" onClick={closeTermEditor} aria-label="?⑹뼱 ?ㅻ챸 ?リ린">
                     <i className="bi bi-x-lg" />
                   </button>
                 </div>
@@ -1292,7 +1384,7 @@ function App() {
                             <button type="button" onClick={() => editUserAcronym(item)} aria-label={`${item.acronym} 수정`}>
                               <i className="bi bi-pencil-square" />
                             </button>
-                            <button type="button" onClick={() => removeUserAcronym(item.acronym)} aria-label={`${item.acronym} 삭제`}>
+                            <button type="button" onClick={() => removeUserAcronym(item.acronym)} aria-label={`${item.acronym} ?젣`}>
                               <i className="bi bi-trash3" />
                             </button>
                           </div>
@@ -1314,14 +1406,14 @@ function App() {
                   sendMessage();
                 }
               }}
-              placeholder="메세지를 입력하세요..."
+              placeholder="메시지를 입력하세요..."
             />
             {(localizationLoading || localizationError || localizationResult) && (
               <div className={`localization-preview ${localizationResult ? 'has-result' : ''}`} aria-live="polite">
                 {localizationLoading && (
                   <div className="localization-loading">
                     <i className="bi bi-arrow-repeat" />
-                    <span>AI가 상대방의 언어와 업무 맥락에 맞게 현지화하고 있어요.</span>
+                    <span>AI가 상대방의 언어와 업무 맥락에 맞게 현지화하고 있어요</span>
                   </div>
                 )}
 
@@ -1348,7 +1440,7 @@ function App() {
                       <div className="change-list">
                         {localizationResult.changes.slice(0, 4).map((change) => (
                           <span className="change-pill" key={`${change.original}-${change.localized}-${change.type}`} title={change.reason}>
-                            {change.original} → {change.localized}
+                            {change.original} ?{change.localized}
                           </span>
                         ))}
                       </div>
@@ -1364,7 +1456,7 @@ function App() {
               <div className="left-tools">
                 <button
                   type="button"
-                  aria-label="용어 설명 추가"
+                  aria-label="?⑹뼱 ?ㅻ챸 異붽?"
                   onClick={() => {
                     if (termPanelOpen) {
                       closeTermEditor();
@@ -1388,7 +1480,7 @@ function App() {
               </div>
               <div className="send-tools">
                 <button className={`translate ${translateMode ? 'on' : ''}`} type="button" onClick={localizeDraft} disabled={localizationLoading || !draft.trim()}>
-                  {localizationLoading ? '현지화 중' : 'AI 현지화'} <i className={`bi ${localizationLoading ? 'bi-arrow-repeat spin' : 'bi-stars'}`} />
+                  {localizationLoading ? '번역 중' : 'AI 현지어'} <i className={localizationLoading ? 'bi bi-arrow-repeat spin' : 'bi bi-stars'} />
                 </button>
                 <button className="send" type="button" onClick={sendMessage}>
                   전송 <i className="bi bi-send" />
@@ -1492,3 +1584,11 @@ function App() {
 }
 
 export default App;
+
+
+
+
+
+
+
+
