@@ -22,6 +22,22 @@ const LOCALE_BY_COUNTRY = {
   RU: 'ru',
 };
 
+/** 인계자 언어 이름. 언어 토글 버튼처럼 우리 팀원이 읽는 자리에 씁니다. */
+const LANGUAGE_NAME_BY_COUNTRY = {
+  KR: '한국어',
+  JP: '일본어',
+  US: '영어',
+  GB: '영어',
+  UK: '영어',
+  SG: '영어',
+  DE: '독일어',
+  RU: '러시아어',
+};
+
+export function languageLabelForCountry(countryCode) {
+  return LANGUAGE_NAME_BY_COUNTRY[countryCode] ?? '현지어';
+}
+
 const LABELS = {
   ko: {
     documentTitle: '업무 인수인계서',

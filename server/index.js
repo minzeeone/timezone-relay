@@ -1,3 +1,6 @@
+import path from 'node:path';
+import fs from 'node:fs';
+
 import dotenv from 'dotenv';
 import express from 'express';
 import OpenAI from 'openai';
@@ -5,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import { run as runBorder03 } from './borders/border03-culture.js';
 import { run as runBorder04 } from './borders/border04-org.js';
-import { run as runHandoffTranslate } from './borders/border02-handoff-translate.js';
+import { run as runHandoffTranslate, runDocument as runHandoffDocumentTranslate } from './borders/border02-handoff-translate.js';
 import { collectProjectLogs } from './data/projectLogs.js';
 
 dotenv.config({
@@ -231,6 +234,20 @@ const app = express();
 
 app.use(express.json({ limit: '1mb' }));
 
+/**
+ * 배포용 정적 서빙.
+ *
+ * 개발할 때는 vite dev 서버가 화면을 띄우고 /api 만 이 서버로 넘깁니다.
+ * 배포에서는 vite dev 서버가 없으므로 `npm run build` 결과(dist/)를 이 서버가
+ * 직접 내려줍니다. dist/ 가 없으면(빌드 전) 그냥 API 서버로만 동작합니다.
+ */
+const distDir = fileURLToPath(new URL('../dist', import.meta.url));
+const hasBuild = fs.existsSync(path.join(distDir, 'index.html'));
+
+if (hasBuild) {
+  app.use(express.static(distDir));
+}
+
 app.get('/health', (req, res) => {
   res.json({ ok: true });
 });
@@ -333,10 +350,19 @@ app.post('/api/culture/analyze', async (req, res) => {
   }
 });
 
-// 인수인계서를 인계받는 사람의 언어로 번역합니다. (Border 02 × Border 04)
+/**
+ * 인수인계서를 인계받는 사람의 언어로 번역합니다. (Border 02 × Border 04)
+ *
+ * 두 가지 입력을 받습니다.
+ *   { briefing, countryCode } — ShiftEndModal 의 인수인계서 검토 화면
+ *   { pages, countryCode }    — 메신저에서 카드를 열었을 때의 문서 화면
+ */
 app.post('/api/handoff/translate', async (req, res) => {
   try {
-    const result = await runHandoffTranslate(req.body ?? {});
+    const payload = req.body ?? {};
+    const result = Array.isArray(payload.pages)
+      ? await runHandoffDocumentTranslate(payload)
+      : await runHandoffTranslate(payload);
     res.json(result);
   } catch (error) {
     console.error('Handoff translate API error:', error);
@@ -344,6 +370,25 @@ app.post('/api/handoff/translate', async (req, res) => {
       error: error.message || '인수인계서 번역에 실패했습니다.',
     });
   }
+});
+
+/**
+ * SPA 폴백. /schedule 같은 주소로 새로고침해도 index.html 을 내려줍니다.
+ * /api 로 시작하는 주소는 위에서 처리되지 않았다면 404 JSON 으로 돌려줍니다.
+ * (Express 5 는 '*' 라우트 패턴을 더 못 써서 미들웨어로 받습니다)
+ */
+app.use((req, res, next) => {
+  if (req.method !== 'GET' || req.path.startsWith('/api')) {
+    next();
+    return;
+  }
+
+  if (!hasBuild) {
+    next();
+    return;
+  }
+
+  res.sendFile(path.join(distDir, 'index.html'));
 });
 
 app.use((err, req, res, next) => {
@@ -357,6 +402,7 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`APEX server listening on http://127.0.0.1:${PORT}`);
+  console.log(`  정적 파일        : ${hasBuild ? 'dist/ 서빙 중' : 'dist/ 없음 (npm run build 필요)'}`);
   console.log(`  Border 02 언어  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '키 없음 (오류 반환)'}`);
   console.log(`  Border 03 문화  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '데모 모드'}`);
   console.log(`  Border 04 조직  : ${process.env.OPENAI_API_KEY ? 'OpenAI 연결됨' : '데모 모드'}`);

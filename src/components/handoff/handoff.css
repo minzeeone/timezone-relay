@@ -2535,3 +2535,12 @@
     transform: none;
   }
 }
+
+/* 문서 화면 번역 실패 안내 (Border 02 × Border 04) */
+.handoff-document-translate-error {
+  margin: 8px 22px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #c0392b;
+  text-align: center;
+}

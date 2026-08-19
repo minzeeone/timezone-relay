@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { presenceOf } from '../../utils/timing.js';
-import { handoffLabels, taskStateLabel } from '../../utils/handoffLabels.js';
+import { handoffLabels, languageLabelForCountry, taskStateLabel } from '../../utils/handoffLabels.js';
 
 const preparationItems = [
   {
@@ -296,17 +296,6 @@ function buildReviewPriorities(briefing, labels) {
 }
 
 /** 국가 코드 → 버튼에 보여줄 언어 이름. 서버(border02-handoff-translate.js)와 같은 매핑입니다. */
-const LANGUAGE_LABEL_BY_COUNTRY = {
-  KR: '한국어',
-  JP: '일본어',
-  US: '영어',
-  GB: '영어',
-  UK: '영어',
-  SG: '영어',
-  DE: '독일어',
-  RU: '러시아어',
-};
-
 /**
  * 번역 결과를 원본 브리핑 위에 덮어씁니다.
  *
@@ -363,7 +352,7 @@ export function ShiftEndModal({
   const isSentStep = step === 'sent';
   const selectedMember = recipients.find((member) => member.name === selectedRecipient) ?? recipients[0];
   const recipientCountryCode = selectedMember?.countryCode ?? 'JP';
-  const recipientLanguageLabel = LANGUAGE_LABEL_BY_COUNTRY[recipientCountryCode] ?? '현지어';
+  const recipientLanguageLabel = languageLabelForCountry(recipientCountryCode);
   const selectedProjectName = projectNameFromSelection(selectedProject, projects);
   const reviewProjectName = selectedProjectName === 'Project Aurora' ? 'Aurora Project' : selectedProjectName;
   const [visiblePreparationCount, setVisiblePreparationCount] = useState(0);

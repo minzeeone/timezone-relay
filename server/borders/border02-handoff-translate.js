@@ -144,3 +144,108 @@ export async function run({ briefing, countryCode }) {
     meta: { mode: 'live', language: language.name, countryCode, model, latencyMs, usage },
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * 전달 후 문서 화면 (메신저에서 인수인계 카드를 열었을 때 보이는 문서)
+ *
+ * 화면에 박혀 있던 일본어 목업을 대신합니다. 페이지 구조(제목 / 본문 /
+ * 포인트 / 작업 카드)를 그대로 유지한 채 각 문자열만 인계자 언어로 옮깁니다.
+ * 배열 길이가 달라지면 화면이 어긋나므로 개수를 반드시 맞춥니다.
+ * ------------------------------------------------------------------ */
+
+const DOCUMENT_SYSTEM_PROMPT = `${SYSTEM_PROMPT}
+
+이번 입력은 인수인계 "문서 화면"의 페이지 목록입니다.
+- pages 배열의 길이, 각 페이지의 body / points / tasks 배열 길이를 입력과 정확히 같게 유지합니다.
+- 순서도 그대로 둡니다. 비어 있는 배열은 비어 있는 채로 돌려줍니다.
+- title 은 페이지 제목입니다. 영어로 적혀 있어도 대상 언어로 옮깁니다.
+- tasks[].state 는 '완료' / '우선' / '다음' / '확인' 같은 짧은 상태 라벨입니다. 짧게 옮깁니다.
+- 이 응답에는 localization_notes 를 넣지 않습니다.`;
+
+const DOCUMENT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['pages'],
+  properties: {
+    pages: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['title', 'body', 'points', 'tasks'],
+        properties: {
+          title: { type: 'string' },
+          body: { type: 'array', items: { type: 'string' } },
+          points: { type: 'array', items: { type: 'string' } },
+          tasks: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['state', 'title', 'desc'],
+              properties: {
+                state: { type: 'string' },
+                title: { type: 'string' },
+                desc: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+/** 화면이 보내온 페이지에서 번역할 문자열만 남깁니다. */
+function toTranslatablePage(page) {
+  return {
+    title: typeof page?.title === 'string' ? page.title : '',
+    body: (page?.body ?? []).map((line) => String(line)),
+    points: (page?.points ?? []).map((line) => String(line)),
+    tasks: (page?.tasks ?? []).map((task) => ({
+      state: String(task?.state ?? ''),
+      title: String(task?.title ?? ''),
+      desc: String(task?.desc ?? ''),
+    })),
+  };
+}
+
+/**
+ * 문서 페이지를 인계자 언어로 번역합니다.
+ *
+ * @param {object} params
+ * @param {Array}  params.pages        화면이 쓰는 페이지 배열
+ * @param {string} params.countryCode  인계자의 국가 코드
+ */
+export async function runDocument({ pages, countryCode }) {
+  if (!Array.isArray(pages) || pages.length === 0) {
+    const error = new Error('pages 가 필요합니다.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const language = languageForCountry(countryCode);
+  const source = pages.map(toTranslatablePage);
+  const meta = { language: language.name, countryCode };
+
+  // 키가 없으면 원문(한국어)을 그대로 돌려줍니다. 화면이 비지 않게 합니다.
+  if (!hasApiKey()) {
+    return { pages: source, meta: { ...meta, mode: 'demo', model: null, latencyMs: 0 } };
+  }
+
+  const { data, usage, model, latencyMs } = await callLLM({
+    system: DOCUMENT_SYSTEM_PROMPT,
+    user: [
+      `아래 인수인계 문서를 ${language.englishName}(으)로 번역하세요.`,
+      '',
+      JSON.stringify({ pages: source }, null, 2),
+    ].join('\n'),
+    schema: DOCUMENT_SCHEMA,
+    schemaName: 'handoff_document_translation',
+  });
+
+  // 모델이 페이지 수를 바꿔 오면 화면이 어긋나므로 원문으로 메꿉니다.
+  const translated = source.map((page, index) => data.pages?.[index] ?? page);
+
+  return { pages: translated, meta: { ...meta, mode: 'live', model, latencyMs, usage } };
+}

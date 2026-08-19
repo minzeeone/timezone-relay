@@ -9,6 +9,7 @@ import { contactsSeed, contactProfiles, emptyTermForm, initialMessages, language
 import { handoffDashboardMock } from './data/handoffMock.js';
 import { handoffProjects, handoffRecipients } from './data/handoffFlowMock.js';
 import { findAcronymsInLines, mergeAcronyms } from './utils/acronyms.js';
+import { languageLabelForCountry } from './utils/handoffLabels.js';
 import { isClusteredMessage, shouldShowMessageTime } from './utils/messageGrouping.js';
 import { presenceOf } from './utils/timing.js';
 import profileBanner from './assets/profile-banner.jpg';
@@ -265,70 +266,48 @@ const createHandoffDocumentPages = (handoff) => [
   },
 ];
 
-const createJapaneseHandoffDocumentPages = (handoff) => [
-  {
-    type: 'cover',
-    title: '業務引き継ぎブリーフィング',
-    eyebrow: handoff.projectName,
-    icon: 'bi-folder2-open',
-  },
-  {
-    title: 'プロジェクト概要',
-    icon: 'bi-layers',
-    terms: handoffDocumentTerms,
-    body: [
-      'Aurora 認証システムを OAuth ベースの認証構造へ移行するプロジェクトです。',
-      '認証機能の開発と API 連携は完了しており、Production 配布前の最終確認段階です。',
-    ],
-    points: ['Project Aurora', 'OAuth 認証構造', 'Production 配布準備'],
-  },
-  {
-    title: '完了した作業',
-    icon: 'bi-check2-square',
-    terms: handoffDocumentTerms,
-    body: ['本日完了した作業と範囲を整理しました。'],
-    tasks: [
-      { state: '完了', title: 'ログイン UI 改善', desc: '新しい認証フローに合わせてログイン画面を改善しました。' },
-      { state: '完了', title: 'OAuth API 連携', desc: 'フロントエンドと新しい認証 API を接続しました。' },
-      { state: '完了', title: 'PR #142 レビュー反映', desc: '認証機能変更に関するレビューコメントを反映しました。' },
-    ],
-  },
-  {
-    title: 'ブロッカーと状況',
-    icon: 'bi-exclamation-diamond',
-    terms: handoffDocumentTerms,
-    body: ['Production 配布は IAM Role 権限の問題により保留中です。'],
-    points: ['影響: Aurora Production 配布停止', '状態: Platform チーム確認待ち', '関連作業: AURORA #128'],
-  },
-  {
-    title: '次のアクション',
-    icon: 'bi-arrow-up-right-circle',
-    terms: handoffDocumentTerms,
-    body: ['次のタイムゾーンのチームがすぐに確認すべき作業です。'],
-    tasks: [
-      { state: '優先', title: 'IAM Role 権限確認', desc: '担当者: John' },
-      { state: '次', title: 'Production 配布再試行', desc: '担当者: 김의중' },
-      { state: '確認', title: '最終認証フロー QA', desc: '担当者: Alex' },
-    ],
-  },
-  {
-    title: '追加リクエスト',
-    icon: 'bi-chat-left-text',
-    terms: handoffDocumentTerms,
-    body: [handoff.additionalNote || '追加リクエストはありません。'],
-    points: ['追加リクエストは原文のまま維持します。', '必要に応じてメッセンジャーで確認してください。'],
-  },
-];
+/**
+ * 서버(/api/handoff/translate)가 돌려준 번역을 한국어 페이지 위에 덮어씁니다.
+ *
+ * 아이콘·용어 팝오버·페이지 종류는 화면 구조라서 그대로 두고, 사람이 읽는
+ * 문자열만 갈아끼웁니다. 번역이 없으면 한국어 원문 그대로 보여줍니다.
+ * 원문에 없던 칸(points / tasks)은 만들지 않습니다. 빈 블록이 생깁니다.
+ */
+const mergeHandoffDocumentTranslation = (pages, translation) => {
+  if (!translation?.pages) return pages;
 
-const createLocalizedHandoffDocumentPages = (handoff, language) => {
-  if (language === 'ja') {
-    return createJapaneseHandoffDocumentPages(handoff).map((page) => (
-      page.type === 'cover' ? page : { ...page, terms: handoffDocumentTermsJa }
-    ));
-  }
+  return pages.map((page, index) => {
+    const translated = translation.pages[index];
+    if (!translated) return page;
 
-  return createHandoffDocumentPages(handoff);
+    const merged = { ...page, title: translated.title || page.title };
+
+    if (page.type === 'cover') return merged;
+
+    // 용어 설명도 인계자가 읽는 것이라 번역 보기에서는 영문 설명을 씁니다.
+    merged.terms = handoffDocumentTermsJa;
+
+    if (page.body) merged.body = translated.body ?? page.body;
+    if (page.points) merged.points = translated.points ?? page.points;
+    if (page.tasks) {
+      merged.tasks = page.tasks.map((task, taskIndex) => ({
+        ...task,
+        ...(translated.tasks?.[taskIndex] ?? {}),
+      }));
+    }
+
+    return merged;
+  });
 };
+
+/** 번역 요청에 담을 문자열만 뽑습니다. (아이콘·용어는 서버가 알 필요가 없습니다) */
+const toTranslatablePages = (pages) =>
+  pages.map((page) => ({
+    title: page.title ?? '',
+    body: page.body ?? [],
+    points: page.points ?? [],
+    tasks: (page.tasks ?? []).map(({ state, title, desc }) => ({ state, title, desc })),
+  }));
 
 const settingsTabs = [
   { id: 'personal', label: '개인', icon: 'bi-person' },
@@ -545,6 +524,10 @@ function App() {
   const [handoffDocumentPage, setHandoffDocumentPage] = useState(0);
   const [handoffPageDirection, setHandoffPageDirection] = useState('open');
   const [handoffDocumentLanguage, setHandoffDocumentLanguage] = useState('ko');
+  // 문서 화면의 인계자 언어 번역 (Border 02 × Border 04)
+  const [handoffDocumentTranslation, setHandoffDocumentTranslation] = useState(null);
+  const [handoffDocumentTranslating, setHandoffDocumentTranslating] = useState(false);
+  const [handoffDocumentTranslateError, setHandoffDocumentTranslateError] = useState('');
   const [handoffAdditionalNote, setHandoffAdditionalNote] = useState('');
   const [localLanguageNotice, setLocalLanguageNotice] = useState(false);
   const [activeAcronym, setActiveAcronym] = useState(null);
@@ -601,15 +584,67 @@ function App() {
     return visibleMessages.find((message) => message.id === activeHandoffDocumentId && message.type === 'handoff-card') ?? null;
   }, [activeHandoffDocumentId, visibleMessages]);
 
+  // 한국어 원문 페이지. 번역은 이 위에 덮어씁니다.
+  const activeHandoffSourcePages = useMemo(() => {
+    return activeHandoffDocument ? createHandoffDocumentPages(activeHandoffDocument.handoff) : [];
+  }, [activeHandoffDocument]);
+
   const activeHandoffPages = useMemo(() => {
-    return activeHandoffDocument ? createLocalizedHandoffDocumentPages(activeHandoffDocument.handoff, handoffDocumentLanguage) : [];
-  }, [activeHandoffDocument, handoffDocumentLanguage]);
+    if (handoffDocumentLanguage !== 'local') return activeHandoffSourcePages;
+    return mergeHandoffDocumentTranslation(activeHandoffSourcePages, handoffDocumentTranslation);
+  }, [activeHandoffSourcePages, handoffDocumentLanguage, handoffDocumentTranslation]);
+
+  // 인계자 국가 → 번역 언어. 카드에 없으면 예전 목업대로 일본으로 봅니다.
+  const handoffRecipientCountryCode = activeHandoffDocument?.handoff?.countryCode ?? 'JP';
+  const handoffRecipientLanguageLabel = languageLabelForCountry(handoffRecipientCountryCode);
+
+  /**
+   * 번역 보기 토글. 처음 켤 때 한 번만 서버를 부르고 이후에는 캐시를 씁니다.
+   * (ShiftEndModal 의 번역 토글과 같은 방식입니다)
+   */
+  const toggleHandoffDocumentLanguage = async () => {
+    if (handoffDocumentLanguage === 'local') {
+      setHandoffDocumentLanguage('ko');
+      return;
+    }
+
+    if (handoffDocumentTranslation) {
+      setHandoffDocumentLanguage('local');
+      return;
+    }
+
+    setHandoffDocumentTranslating(true);
+    setHandoffDocumentTranslateError('');
+
+    try {
+      const response = await fetch('/api/handoff/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pages: toTranslatablePages(activeHandoffSourcePages),
+          countryCode: handoffRecipientCountryCode,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error ?? `서버 오류 (${response.status})`);
+
+      setHandoffDocumentTranslation(payload);
+      setHandoffDocumentLanguage('local');
+    } catch (error) {
+      setHandoffDocumentTranslateError(error.message || '번역에 실패했습니다.');
+    } finally {
+      setHandoffDocumentTranslating(false);
+    }
+  };
 
   const closeHandoffDocument = () => {
     setActiveHandoffDocumentId(null);
     setHandoffDocumentPage(0);
     setHandoffPageDirection('open');
     setHandoffDocumentLanguage('ko');
+    setHandoffDocumentTranslation(null);
+    setHandoffDocumentTranslateError('');
   };
 
   const openHandoffDocument = (messageId) => {
@@ -617,6 +652,8 @@ function App() {
     setHandoffDocumentPage(0);
     setHandoffPageDirection('open');
     setHandoffDocumentLanguage('ko');
+    setHandoffDocumentTranslation(null);
+    setHandoffDocumentTranslateError('');
   };
 
   const moveHandoffPage = (direction) => {
@@ -937,6 +974,8 @@ function App() {
         handoff: {
           projectName,
           recipientName: targetContact.name,
+          // 문서 화면을 어떤 언어로 번역할지 정하는 값입니다.
+          countryCode: handoffRecipients[recipientIndex]?.countryCode ?? 'JP',
           cleanRoute: '서울 → 도쿄',
           date: '8월 15일',
           timestamp: '2026.8.15 PM 9:26',
@@ -1035,7 +1074,7 @@ function App() {
                   </div>
                   <span className="handoff-language-pill">
                     <i className="bi bi-circle-fill" />
-                    {handoffDocumentLanguage === 'ja' ? '日本語' : '한국어'}
+                    {handoffDocumentLanguage === 'local' ? handoffRecipientLanguageLabel : '한국어'}
                   </span>
                 </article>
               ) : (
@@ -1126,14 +1165,20 @@ function App() {
                   한국어
                 </button>
                 <button
-                  className={handoffDocumentLanguage === 'ja' ? 'active' : ''}
+                  className={handoffDocumentLanguage === 'local' ? 'active' : ''}
                   type="button"
-                  onClick={() => setHandoffDocumentLanguage('ja')}
+                  onClick={toggleHandoffDocumentLanguage}
+                  disabled={handoffDocumentTranslating}
                 >
-                  일본어 <small>현지어</small>
+                  {handoffDocumentTranslating ? '번역 중…' : handoffRecipientLanguageLabel} <small>현지어</small>
                 </button>
               </div>
             </div>
+            {handoffDocumentTranslateError && (
+              <p className="handoff-document-translate-error" role="alert">
+                {handoffDocumentTranslateError}
+              </p>
+            )}
           </section>
         </div>
       )}
