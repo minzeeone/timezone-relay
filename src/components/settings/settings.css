@@ -20,6 +20,12 @@
   animation: dashboardAmbientGlow 7.5s ease-in-out infinite;
 }
 
+/* 낮은 화면에서는 상단 바를 줄여 본문 높이를 확보합니다. */
+.apex-window.view-settings {
+  grid-template-rows: clamp(84px, 12vh, 112px) minmax(0, 1fr);
+  padding-bottom: clamp(16px, 2.5vh, 36px);
+}
+
 .apex-window.view-settings .topbar {
   position: relative;
   z-index: 1;
@@ -87,7 +93,7 @@
   min-height: 0;
   /* 헤더를 음수 마진으로 위로 올리므로 여기서는 자르지 않습니다. */
   overflow: visible;
-  padding: 10px clamp(20px, 2.5vw, 44px) 44px 0;
+  padding: 10px clamp(20px, 2.5vw, 44px) clamp(10px, 1.5vh, 44px) 0;
   color: #f8f4f1;
   animation: settingsIn 420ms var(--ease-out) both;
 }
@@ -179,9 +185,9 @@
 }
 
 .settings-preview h3 {
-  margin: 0 0 2px 4px;
+  margin: 0 0 clamp(0px, 0.3vh, 2px) 4px;
   color: rgba(255, 255, 255, 0.84);
-  font-size: 22px;
+  font-size: clamp(17px, 2.2vh, 22px);
   font-weight: 620;
 }
 
@@ -201,7 +207,7 @@
 }
 
 .settings-profile-banner {
-  height: 160px;
+  height: clamp(84px, 12.5vh, 160px);
   overflow: hidden;
 }
 
@@ -214,8 +220,8 @@
 .settings-profile-body {
   position: relative;
   display: grid;
-  gap: 10px;
-  padding: 56px 46px 28px;
+  gap: clamp(6px, 1vh, 10px);
+  padding: clamp(34px, 5vh, 56px) clamp(24px, 3vw, 46px) clamp(16px, 2.5vh, 28px);
 }
 
 .settings-preview-avatar {
@@ -223,14 +229,14 @@
   top: -44px;
   left: 50px;
   display: grid;
-  width: 82px;
-  height: 82px;
+  width: clamp(62px, 9vh, 82px);
+  height: clamp(62px, 9vh, 82px);
   place-items: center;
-  border: 10px solid rgba(20, 14, 13, 0.95);
+  border: clamp(6px, 1vh, 10px) solid rgba(20, 14, 13, 0.95);
   border-radius: 50%;
   background: #fff1dc;
   color: #1c0d07;
-  font-size: 34px;
+  font-size: clamp(25px, 3.6vh, 34px);
   font-weight: 720;
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.34);
 }
@@ -284,8 +290,8 @@
 
 .settings-profile-section {
   display: grid;
-  gap: 12px;
-  margin-top: 14px;
+  gap: clamp(7px, 1.4vh, 12px);
+  margin-top: clamp(8px, 1.6vh, 14px);
 }
 
 .settings-profile-section b {
@@ -302,8 +308,9 @@
 
 .settings-profile-section.social > div {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 28px;
+  /* 화면이 낮으면 2줄로 쌓지 않고 한 줄에 늘어놓아 세로를 아낍니다. */
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: clamp(8px, 1.4vh, 14px) clamp(12px, 1.6vw, 28px);
 }
 
 .settings-profile-section.social span {
@@ -397,16 +404,16 @@
   grid-column: 3;
   align-self: start;
   display: grid;
-  gap: 22px;
+  gap: clamp(8px, 2vh, 22px);
   width: 100%;
   min-width: 0;
-  padding-top: 40px;
+  padding-top: clamp(0px, 3vh, 40px);
 }
 
 .settings-card {
   display: grid;
   border-radius: 16px;
-  padding: 16px 30px;
+  padding: clamp(8px, 1.6vh, 16px) clamp(18px, 2vw, 30px);
 }
 
 .settings-row {
@@ -414,7 +421,7 @@
   grid-template-columns: 230px minmax(0, 1fr) 98px;
   gap: 20px;
   align-items: center;
-  min-height: 62px;
+  min-height: clamp(40px, 6.4vh, 62px);
   color: rgba(255, 255, 255, 0.88);
 }
 
