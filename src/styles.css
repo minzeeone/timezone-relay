@@ -1,4 +1,4 @@
-@import "tailwindcss/theme.css" layer(theme);
+﻿@import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "./styles/tokens.css";
 @import "./styles/animations.css";
@@ -8,6 +8,9 @@
 @import "./components/chat/chat.css";
 @import "./components/dashboard/dashboard.css";
 @import "./components/schedule/schedule.css";
+@import "./components/settings/settings.css";
 @import "./components/project/project.css";
 @import "./components/handoff/handoff.css";
 @import "./styles/responsive.css";
+
+
