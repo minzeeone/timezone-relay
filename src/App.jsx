@@ -338,7 +338,76 @@ const settingsTabs = [
   { id: 'account', label: '계정', icon: 'bi-person-circle' },
 ];
 
+/**
+ * 설정 본문을 컨테이너 높이에 맞춰 자동으로 축소합니다.
+ *
+ * 고정값을 하나씩 줄이는 방식은 어느 화면에서 또 넘칠지 보장할 수 없어서,
+ * 넘치는 만큼 비율을 계산해 축소합니다. 화면 크기와 무관하게 항상 한 화면에 들어옵니다.
+ * 축소 하한(0.72)보다 더 줄여야 하는 극단적인 경우에만 스크롤을 허용합니다.
+ */
+function useFitToHeight() {
+  const outerRef = useRef(null);
+  const innerRef = useRef(null);
+
+  useEffect(() => {
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) return undefined;
+
+    const fit = () => {
+      // 원래 크기를 알아야 하므로 배율을 되돌리고 다시 잰다.
+      // 폭 보정(width: 100%/scale)이 걸려 있어 배율이 높이에도 영향을 주므로,
+      // 되돌린 뒤 강제로 레이아웃을 확정시키고 잰다.
+      inner.style.setProperty('--fit-scale', '1');
+      inner.getBoundingClientRect();
+
+      const available = outer.clientHeight;
+      const needed = inner.scrollHeight;
+      if (!available || !needed) return;
+
+      const scale = Math.min(1, Math.max(0.62, available / needed));
+      inner.style.setProperty('--fit-scale', String(scale));
+
+      // scale 은 그리는 크기만 줄이고 레이아웃 높이는 그대로여서,
+      // 다 담긴 경우에도 스크롤바가 남습니다. 축소한 뒤 실제로 담겼는지로 판단합니다.
+      outer.style.overflowY = needed * scale <= available + 1 ? 'hidden' : 'auto';
+    };
+
+    // 크기 변화 직후에는 레이아웃이 아직 확정되지 않아 한 번만 재면 빗나갑니다.
+    // 즉시 한 번, 다음 프레임에 한 번 더 잽니다.
+    // 배율과 높이가 서로 물려 있어 한 번으로는 수렴하지 않습니다.
+    // 연속 호출하면 두세 번 안에 값이 안정됩니다.
+    const fitTwice = () => {
+      fit();
+      fit();
+      requestAnimationFrame(() => {
+        fit();
+        fit();
+      });
+    };
+
+    fitTwice();
+
+    // inner 는 관찰하지 않습니다. 배율을 바꾸면 inner 크기가 다시 바뀌어
+    // ResizeObserver 가 루프로 판단하고 콜백을 멈춥니다.
+    const observer = new ResizeObserver(fitTwice);
+    observer.observe(outer);
+    window.addEventListener('resize', fitTwice);
+
+    // 웹폰트가 늦게 오면 글자 높이가 바뀌므로 그때 다시 잽니다.
+    if (document.fonts?.ready) document.fonts.ready.then(fitTwice);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', fitTwice);
+    };
+  }, []);
+
+  return { outerRef, innerRef };
+}
+
 function SettingsPanel() {
+  const { outerRef, innerRef } = useFitToHeight();
   const profileTiming = presenceOf('KR');
   const settingRows = [
     { label: '이름', value: '김의중' },
@@ -375,9 +444,9 @@ function SettingsPanel() {
         </section>
       </div>
 
-      {/* 본문만 스크롤합니다. .settings-page 에 overflow 를 주면
-          위로 끌어올린 헤더(음수 마진)가 잘려 탭이 사라집니다. */}
-      <div className="settings-body">
+      {/* 내용이 컨테이너보다 크면 그 비율만큼 축소해 항상 한 화면에 담습니다. */}
+      <div className="settings-body" ref={outerRef}>
+        <div className="settings-body-inner" ref={innerRef}>
         <section className="settings-preview" aria-label="프로필 미리보기">
           <h3>프로필 미리보기</h3>
           <article className="settings-profile-card">
@@ -451,6 +520,7 @@ function SettingsPanel() {
             </div>
           </article>
         </section>
+      </div>
       </div>
 
     </main>

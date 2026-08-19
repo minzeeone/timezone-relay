@@ -71,15 +71,32 @@
 .settings-body {
   grid-column: 1 / -1;
   grid-row: 2;
+  min-height: 0;
+  /* 자동 축소로 항상 담기므로 스크롤바가 뜨지 않습니다.
+     하한(0.72)보다 더 줄여야 하는 극단적인 경우에만 스크롤됩니다. */
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.settings-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* 넘치는 만큼 축소합니다. 폭은 축소분만큼 되돌려 오른쪽 여백이 생기지 않게 합니다. */
+.settings-body-inner {
+  --fit-scale: 1;
   display: grid;
+  transform: scale(var(--fit-scale));
+  transform-origin: top left;
+  width: calc(100% / var(--fit-scale));
+}
+
+.settings-body-inner {
   /* 1열 프로필 카드 / 2열 연결선(가변 간격) / 3열 설정 목록.
      가운데를 clamp 로 두면 화면이 좁아질 때 간격이 먼저 줄어듭니다. */
   grid-template-columns: minmax(280px, 392px) clamp(24px, 6vw, 150px) minmax(0, 1fr);
   column-gap: clamp(12px, 1.5vw, 38px);
   align-items: start;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .settings-page {
