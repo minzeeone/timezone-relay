@@ -1099,3 +1099,21 @@
     font-size: 14px;
   }
 }
+
+/* 설정 탭 폭이 0 이 되는 문제 수정.
+ *
+ * 탭을 감싸던 .settings-header-row 가 없어지면서 .settings-tabs 가
+ * .settings-page 그리드의 첫 칸(340px)에 직접 놓였습니다. 그런데 폭 계산이
+ * "전체 폭 - 왼쪽 여백 - 설명 영역"을 전제로 해서 음수가 되고, 결국 0 으로
+ * 잘려 화면에서 사라졌습니다. 버튼은 DOM 에 있지만 누를 수 없는 상태였습니다.
+ *
+ * 옆의 .settings-copy 와 같은 방식(부모 기준 absolute)으로 띄우면
+ * 폭 계산의 기준이 .settings-page 전체가 되어 의도대로 동작합니다.
+ */
+.apex-window.view-settings .settings-page > .settings-tabs {
+  position: absolute;
+  top: -92px;
+  left: 116px;
+  width: auto;
+  max-width: calc(100% - 116px - 540px);
+}
