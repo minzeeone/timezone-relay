@@ -1,4 +1,4 @@
-﻿.apex-window.view-settings {
+.apex-window.view-settings {
   position: relative;
   grid-template-columns: 210px minmax(0, 1fr);
   grid-template-rows: 112px minmax(0, 1fr);
@@ -26,6 +26,7 @@
   grid-template-columns: 210px minmax(0, 1fr) auto;
   align-items: start;
   padding-top: 16px;
+  pointer-events: none;
 }
 
 .apex-window.view-settings .topbar h2 {
@@ -524,3 +525,577 @@
 
 
 
+
+/* Settings responsive containment fix */
+.settings-page {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.settings-tabs {
+  max-width: min(545px, calc(100vw - 420px));
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.settings-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.settings-tabs button {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1480px) {
+  .settings-page {
+    grid-template-columns: minmax(320px, 392px) minmax(48px, 8vw) minmax(0, 1fr);
+    column-gap: clamp(20px, 2.4vw, 34px);
+    padding-right: 0;
+  }
+
+  .settings-copy {
+    right: 0;
+    min-width: min(520px, 42vw);
+  }
+}
+
+@media (max-width: 1240px) {
+  .settings-page {
+    grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+    column-gap: 24px;
+    padding-right: 0;
+  }
+
+  .settings-tabs {
+    left: 102px;
+    max-width: calc(100vw - 260px);
+  }
+
+  .settings-panel-list {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .settings-row {
+    grid-template-columns: minmax(130px, 190px) minmax(0, 1fr) 88px;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .settings-page {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    height: auto;
+    min-height: max-content;
+    overflow: visible;
+    padding: 72px 0 120px;
+  }
+
+  .settings-tabs {
+    top: -70px;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .settings-copy {
+    display: none;
+  }
+
+  .settings-preview,
+  .settings-panel-list {
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  .settings-preview {
+    order: 1;
+  }
+
+  .settings-panel-list {
+    order: 2;
+    padding-top: 0;
+  }
+
+  .settings-row {
+    grid-template-columns: minmax(94px, 0.9fr) minmax(0, 1.1fr) 78px;
+    gap: 10px;
+    min-height: 58px;
+  }
+
+  .settings-row > span {
+    font-size: 17px;
+  }
+
+  .settings-row > strong {
+    font-size: 14px;
+  }
+
+  .settings-row button {
+    min-width: 74px;
+    padding-inline: 14px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 720px) {
+  .settings-page {
+    padding-top: 86px;
+  }
+
+  .settings-tabs {
+    top: -76px;
+  }
+
+  .settings-tabs button {
+    height: 44px;
+    padding-inline: 12px;
+    font-size: 17px;
+  }
+
+  .settings-tabs i {
+    font-size: 19px;
+  }
+
+  .settings-row {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    padding-block: 10px;
+  }
+
+  .settings-row > span {
+    grid-column: 1 / 2;
+  }
+
+  .settings-row > strong,
+  .settings-social-icons {
+    grid-column: 1 / 2;
+    grid-row: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .settings-row button {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+}
+
+/* Settings mobile width override */
+@media (max-width: 900px) {
+  .apex-window.view-settings .settings-page {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .apex-window.view-settings .settings-tabs {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .apex-window.view-settings .settings-preview,
+  .apex-window.view-settings .settings-panel-list {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .apex-window.view-settings .settings-tabs {
+    left: 0;
+    right: auto;
+    width: calc(100vw - 30px);
+    max-width: calc(100vw - 30px);
+  }
+
+  .apex-window.view-settings .settings-panel-list {
+    width: calc(100vw - 30px);
+    max-width: calc(100vw - 30px);
+  }
+}
+
+/* Settings narrow viewport page width fix */
+@media (max-width: 720px) {
+  .apex-window.view-settings .settings-page {
+    grid-column: 1;
+    width: calc(100vw - 30px);
+    max-width: calc(100vw - 30px);
+    min-width: 0;
+  }
+
+  .apex-window.view-settings .settings-preview {
+    width: calc(100vw - 30px);
+    max-width: calc(100vw - 30px);
+  }
+}
+
+
+/* Settings laptop-height containment */
+@media (min-width: 981px) and (max-height: 820px) {
+  .settings-page {
+    padding-top: 0;
+    padding-bottom: 24px;
+  }
+
+  .settings-preview {
+    gap: 14px;
+  }
+
+  .settings-preview h3 {
+    font-size: 19px;
+  }
+
+  .settings-profile-card {
+    min-height: 0;
+  }
+
+  .settings-profile-banner {
+    height: 126px;
+  }
+
+  .settings-profile-body {
+    gap: 8px;
+    padding: 48px 34px 22px;
+  }
+
+  .settings-preview-avatar {
+    top: -38px;
+    left: 42px;
+    width: 72px;
+    height: 72px;
+    border-width: 8px;
+    font-size: 30px;
+  }
+
+  .settings-profile-pills {
+    gap: 8px;
+    margin: 10px 0 4px;
+  }
+
+  .settings-profile-pills span {
+    min-height: 32px;
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+
+  .settings-profile-section {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .settings-profile-section p,
+  .settings-profile-section.social span {
+    font-size: 13px;
+  }
+
+  .settings-profile-section.social > div {
+    gap: 10px 20px;
+  }
+
+  .settings-panel-list {
+    gap: 14px;
+    padding-top: 12px;
+  }
+
+  .settings-card {
+    padding: 12px 24px;
+  }
+
+  .settings-row {
+    min-height: 52px;
+  }
+
+  .settings-row > span {
+    font-size: 19px;
+  }
+
+  .settings-row button {
+    min-height: 32px;
+    font-size: 15px;
+  }
+}
+
+/* Settings viewport fit refinement */
+.apex-window.view-settings {
+  grid-template-columns: var(--nav-col, 210px) minmax(0, 1fr);
+}
+
+.apex-window.view-settings .topbar {
+  grid-template-columns: var(--nav-col, 210px) minmax(0, 1fr) auto;
+}
+
+.settings-page {
+  grid-template-columns: minmax(300px, 392px) clamp(42px, 5vw, 110px) minmax(0, 1fr);
+  column-gap: clamp(18px, 2.2vw, 34px);
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.settings-panel-list {
+  width: min(800px, 100%);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.settings-row {
+  grid-template-columns: minmax(150px, 230px) minmax(0, 1fr) 98px;
+}
+
+.settings-row > strong,
+.settings-social-icons {
+  min-width: 0;
+}
+
+.settings-context-card {
+  min-height: 430px;
+  align-content: start;
+  gap: 22px;
+  padding: 38px 34px;
+}
+
+.settings-context-card > i {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 119, 72, 0.12);
+  color: #ff7748;
+  font-size: 34px;
+}
+
+.settings-context-card > small {
+  color: #ff7748;
+  font-size: 16px;
+  font-weight: 660;
+}
+
+.settings-context-card > strong {
+  max-width: 280px;
+  color: #fff;
+  font-size: 25px;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.settings-context-card > div {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.settings-context-card span {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.settings-context-card b {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 14px;
+  font-weight: 520;
+}
+
+.settings-context-card em {
+  color: #fff;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 640;
+}
+
+@media (min-width: 981px) and (max-width: 1800px) {
+  .apex-window.view-settings {
+    grid-template-columns: var(--nav-col, clamp(96px, 10vw, 168px)) minmax(0, 1fr);
+  }
+
+  .apex-window.view-settings .topbar {
+    grid-template-columns: var(--nav-col, clamp(96px, 10vw, 168px)) minmax(0, 1fr) auto;
+  }
+
+  .settings-page {
+    grid-template-columns: minmax(300px, 392px) clamp(34px, 4vw, 82px) minmax(0, 1fr);
+  }
+
+  .settings-link-line::before,
+  .settings-link-line::after {
+    right: clamp(-34px, -2.5vw, -22px);
+    width: clamp(44px, 4vw, 62px);
+  }
+
+  .settings-link-line span {
+    left: clamp(-34px, -2.8vw, -20px);
+    width: calc(100% + clamp(42px, 4vw, 64px));
+  }
+}
+
+@media (min-width: 981px) and (max-width: 1540px) {
+  .settings-page {
+    grid-template-columns: minmax(260px, 340px) clamp(24px, 3vw, 48px) minmax(0, 1fr);
+  }
+
+  .settings-preview {
+    width: min(100%, 340px);
+  }
+
+  .settings-profile-banner {
+    height: 128px;
+  }
+
+  .settings-profile-body {
+    padding-inline: 32px;
+  }
+
+  .settings-row {
+    grid-template-columns: minmax(128px, 184px) minmax(0, 1fr) 86px;
+    gap: 12px;
+  }
+
+  .settings-row > span {
+    font-size: 18px;
+  }
+
+  .settings-row > strong {
+    font-size: 14px;
+  }
+
+  .settings-row button {
+    min-width: 78px;
+    padding-inline: 14px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 900px) {
+  .settings-context-card {
+    min-height: 0;
+    padding: 28px 24px;
+  }
+
+  .settings-context-card > strong {
+    max-width: none;
+    font-size: 22px;
+  }
+}
+
+/* Keep settings tabs clickable outside the content grid */
+.settings-page {
+  overflow: visible;
+}
+
+@media (max-width: 1240px) {
+  .settings-page {
+    overflow: visible;
+  }
+}
+
+/* Settings copy right-anchor refinement */
+.apex-window.view-settings .settings-page {
+  --settings-copy-width: clamp(230px, 31vw, 520px);
+  --settings-tabs-left: 116px;
+}
+
+.apex-window.view-settings .settings-copy {
+  position: absolute;
+  top: -98px;
+  right: 0;
+  left: auto;
+  width: var(--settings-copy-width);
+  min-width: 0;
+  max-width: var(--settings-copy-width);
+  gap: clamp(12px, 1.35vw, 20px);
+}
+
+.apex-window.view-settings .settings-copy > i {
+  flex: 0 0 auto;
+  font-size: clamp(34px, 3vw, 52px);
+}
+
+.apex-window.view-settings .settings-copy strong {
+  margin-bottom: clamp(5px, 0.6vw, 8px);
+  font-size: clamp(17px, 1.3vw, 22px);
+  line-height: 1.15;
+}
+
+.apex-window.view-settings .settings-copy p {
+  font-size: clamp(12px, 0.9vw, 15px);
+  line-height: 1.35;
+}
+
+.apex-window.view-settings .settings-tabs {
+  left: var(--settings-tabs-left);
+  max-width: calc(100% - var(--settings-tabs-left) - var(--settings-copy-width));
+}
+
+@media (max-width: 1240px) {
+  .apex-window.view-settings .settings-page {
+    --settings-copy-width: clamp(210px, 28vw, 320px);
+    --settings-tabs-left: 102px;
+  }
+
+  .apex-window.view-settings .settings-copy {
+    position: absolute;
+    top: -94px;
+    right: 0;
+    display: flex;
+  }
+}
+
+@media (max-width: 900px) {
+  .apex-window.view-settings .settings-copy {
+    display: none;
+  }
+
+  .apex-window.view-settings .settings-tabs {
+    left: 0;
+    max-width: 100%;
+  }
+}
+/* Prevent laptop-width settings rows from falling into the connector column. */
+@media (min-width: 901px) and (max-width: 1240px) {
+  .apex-window.view-settings .settings-panel-list {
+    grid-column: 3;
+  }
+
+  .apex-window.view-settings .settings-preview {
+    grid-column: 1;
+  }
+}
+
+/* Text-fit pass for the tested notebook/tablet desktop widths. */
+@media (min-width: 901px) and (max-width: 1366px) {
+  .apex-window.view-settings .settings-row {
+    grid-template-columns: minmax(112px, 0.72fr) minmax(0, 1fr) 76px;
+    gap: 10px;
+  }
+
+  .apex-window.view-settings .settings-row > span {
+    font-size: clamp(16px, 1.55vw, 18px);
+    line-height: 1.25;
+  }
+
+  .apex-window.view-settings .settings-row > strong,
+  .apex-window.view-settings .settings-social-icons {
+    overflow: hidden;
+    font-size: clamp(13px, 1.2vw, 14px);
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .apex-window.view-settings .settings-row button {
+    min-width: 76px;
+    padding-inline: 12px;
+    font-size: 14px;
+  }
+}
