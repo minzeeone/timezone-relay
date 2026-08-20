@@ -96,7 +96,9 @@
   gap: clamp(10px, 2vh, 22px);
   min-height: 0;
   overflow-y: auto;
-  padding-right: 2px;
+  /* 오른쪽 아래에 떠 있는 새 채팅 버튼(.new-chat)이 마지막 항목을 가리지 않도록
+     버튼 높이(76px) + 여백만큼 아래를 비워 둡니다. */
+  padding: 0 2px 96px 0;
   scrollbar-width: thin;
   scrollbar-color: #505050 transparent;
 }

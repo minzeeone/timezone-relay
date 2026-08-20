@@ -20,12 +20,6 @@
   animation: dashboardAmbientGlow 7.5s ease-in-out infinite;
 }
 
-/* 낮은 화면에서는 상단 바를 줄여 본문 높이를 확보합니다. */
-.apex-window.view-settings {
-  grid-template-rows: clamp(84px, 12vh, 112px) minmax(0, 1fr);
-  padding-bottom: clamp(16px, 2.5vh, 36px);
-}
-
 .apex-window.view-settings .topbar {
   position: relative;
   z-index: 1;
@@ -50,92 +44,34 @@
 }
 
 
-/* 탭과 설명을 한 줄에 놓아 서로 밀어내게 합니다.
-   예전에는 둘 다 position: absolute 라 서로를 몰라서 좁은 화면에서 겹쳤습니다. */
-.settings-header-row {
-  grid-column: 1 / -1;
-  grid-row: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: clamp(16px, 2vw, 40px);
-  margin: -92px 0 8px 116px;
-  min-width: 0;
-}
-
-.settings-header-row > * {
-  min-width: 0;
-}
-
-/* 본문만 스크롤합니다. 화면 폭에 맞춰 늘고 줄어야 하므로 고정 px 를 쓰지 않습니다.
-   왼쪽 프로필 카드는 300~392px 사이, 오른쪽 패널은 남는 공간을 다 씁니다. */
-.settings-body {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  min-height: 0;
-  /* 자동 축소로 항상 담기므로 스크롤바가 뜨지 않습니다.
-     하한(0.72)보다 더 줄여야 하는 극단적인 경우에만 스크롤됩니다. */
-  overflow: auto;
-  scrollbar-width: none;
-}
-
-.settings-body::-webkit-scrollbar {
-  display: none;
-}
-
-/* 넘치는 만큼 축소합니다. 폭은 축소분만큼 되돌려 오른쪽 여백이 생기지 않게 합니다. */
-.settings-body-inner {
-  --fit-scale: 1;
-  display: grid;
-  transform: scale(var(--fit-scale));
-  transform-origin: top left;
-  width: calc(100% / var(--fit-scale));
-}
-
-.settings-body-inner {
-  /* 1열 프로필 카드 / 2열 연결선(가변 간격) / 3열 설정 목록.
-     가운데를 clamp 로 두면 화면이 좁아질 때 간격이 먼저 줄어듭니다. */
-  grid-template-columns: minmax(280px, 392px) clamp(24px, 6vw, 150px) minmax(0, 1fr);
-  column-gap: clamp(12px, 1.5vw, 38px);
-  align-items: start;
-}
-
 .settings-page {
   grid-column: 2 / -1;
   grid-row: 2;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: 392px 150px minmax(650px, 800px);
+  grid-template-rows: minmax(0, 1fr);
+  column-gap: 38px;
   height: 100%;
   min-height: 0;
-  /* 헤더를 음수 마진으로 위로 올리므로 여기서는 자르지 않습니다. */
-  overflow: visible;
-  padding: 10px clamp(20px, 2.5vw, 44px) clamp(10px, 1.5vh, 44px) 0;
+  padding: 10px 44px 44px 0;
   color: #f8f4f1;
   animation: settingsIn 420ms var(--ease-out) both;
 }
 
 .settings-tabs {
+  position: absolute;
+  top: -92px;
+  left: 116px;
   display: flex;
   align-items: flex-start;
   gap: 0;
   height: 48px;
-  /* 줄바꿈되면 아래 내용과 겹칩니다. 좁으면 가로로 스크롤시킵니다. */
-  flex-wrap: nowrap;
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.13);
   z-index: 3;
 }
 
-.settings-tabs::-webkit-scrollbar {
-  display: none;
-}
-
 .settings-tabs button {
-  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -164,12 +100,13 @@
 }
 
 .settings-copy {
+  position: absolute;
+  top: -98px;
+  right: -15px;
   display: flex;
   align-items: center;
   gap: 20px;
-  /* min-width 를 고정하면 좁은 화면에서 탭을 밀고 나갑니다. */
-  min-width: 0;
-  max-width: 520px;
+  min-width: 520px;
   color: #fff;
 }
 
@@ -198,14 +135,13 @@
   align-self: start;
   display: grid;
   gap: 20px;
-  width: 100%;
-  min-width: 0;
+  width: 392px;
 }
 
 .settings-preview h3 {
-  margin: 0 0 clamp(0px, 0.3vh, 2px) 4px;
+  margin: 0 0 2px 4px;
   color: rgba(255, 255, 255, 0.84);
-  font-size: clamp(17px, 2.2vh, 22px);
+  font-size: 22px;
   font-weight: 620;
 }
 
@@ -225,7 +161,7 @@
 }
 
 .settings-profile-banner {
-  height: clamp(84px, 12.5vh, 160px);
+  height: 160px;
   overflow: hidden;
 }
 
@@ -238,8 +174,8 @@
 .settings-profile-body {
   position: relative;
   display: grid;
-  gap: clamp(6px, 1vh, 10px);
-  padding: clamp(34px, 5vh, 56px) clamp(24px, 3vw, 46px) clamp(16px, 2.5vh, 28px);
+  gap: 10px;
+  padding: 56px 46px 28px;
 }
 
 .settings-preview-avatar {
@@ -247,14 +183,14 @@
   top: -44px;
   left: 50px;
   display: grid;
-  width: clamp(62px, 9vh, 82px);
-  height: clamp(62px, 9vh, 82px);
+  width: 82px;
+  height: 82px;
   place-items: center;
-  border: clamp(6px, 1vh, 10px) solid rgba(20, 14, 13, 0.95);
+  border: 10px solid rgba(20, 14, 13, 0.95);
   border-radius: 50%;
   background: #fff1dc;
   color: #1c0d07;
-  font-size: clamp(25px, 3.6vh, 34px);
+  font-size: 34px;
   font-weight: 720;
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.34);
 }
@@ -308,8 +244,8 @@
 
 .settings-profile-section {
   display: grid;
-  gap: clamp(7px, 1.4vh, 12px);
-  margin-top: clamp(8px, 1.6vh, 14px);
+  gap: 12px;
+  margin-top: 14px;
 }
 
 .settings-profile-section b {
@@ -326,9 +262,8 @@
 
 .settings-profile-section.social > div {
   display: grid;
-  /* 화면이 낮으면 2줄로 쌓지 않고 한 줄에 늘어놓아 세로를 아낍니다. */
-  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
-  gap: clamp(8px, 1.4vh, 14px) clamp(12px, 1.6vw, 28px);
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 28px;
 }
 
 .settings-profile-section.social span {
@@ -422,16 +357,15 @@
   grid-column: 3;
   align-self: start;
   display: grid;
-  gap: clamp(8px, 2vh, 22px);
-  width: 100%;
-  min-width: 0;
-  padding-top: clamp(0px, 3vh, 40px);
+  gap: 22px;
+  width: 800px;
+  padding-top: 40px;
 }
 
 .settings-card {
   display: grid;
   border-radius: 16px;
-  padding: clamp(8px, 1.6vh, 16px) clamp(18px, 2vw, 30px);
+  padding: 16px 30px;
 }
 
 .settings-row {
@@ -439,7 +373,7 @@
   grid-template-columns: 230px minmax(0, 1fr) 98px;
   gap: 20px;
   align-items: center;
-  min-height: clamp(40px, 6.4vh, 62px);
+  min-height: 62px;
   color: rgba(255, 255, 255, 0.88);
 }
 
@@ -522,57 +456,23 @@
   }
 }
 
-/* 1480px 브레이크포인트에서 3컬럼 고정값으로 되돌리던 규칙을 지웠습니다.
-   이제 기본 그리드가 minmax/clamp 라 폭에 따라 알아서 줄어듭니다. */
+@media (max-width: 1480px) {
+  .settings-page {
+    grid-template-columns: 390px 120px minmax(620px, 1fr);
+    column-gap: 34px;
+    padding-right: 28px;
+  }
 
-@media (max-width: 1180px) {
-  /* 좁아지면 설명 문구는 접고 아이콘과 제목만 남깁니다. */
-  .settings-copy p {
-    display: none;
+  .settings-copy {
+    right: 80px;
+  }
+
+  .settings-panel-list {
+    width: 100%;
   }
 }
 
 @media (max-width: 1240px) {
-  .apex-window.view-settings {
-    grid-template-rows: 118px minmax(0, 1fr);
-  }
-
-  /* 이 폭부터는 좌우 2단이 좁아서, 프로필 카드와 설정 목록을 위아래로 쌓습니다. */
-  /* 좁아지면 연결선을 접고 위아래 1단으로 쌓습니다. */
-  .settings-body {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 22px;
-  }
-
-  .settings-preview,
-  .settings-panel-list {
-    grid-column: 1;
-  }
-
-  .settings-header-row {
-    flex-wrap: wrap;
-    margin-left: 0;
-  }
-
-  .settings-tabs {
-    max-width: 100%;
-    overflow-x: auto;
-  }
-
-  .settings-preview,
-  .settings-panel-list {
-    grid-column: 1;
-    width: 100%;
-  }
-
-  .settings-panel-list {
-    padding-top: 0;
-  }
-
-  .settings-link-line {
-    display: none;
-  }
-}edia (max-width: 1240px) {
   .apex-window.view-settings {
     grid-template-rows: 118px minmax(0, 1fr);
   }

@@ -38,7 +38,21 @@ const TIMELINE_DAY_END_HOUR = 24;
 const TIMELINE_TOTAL_HOURS = TIMELINE_DAY_END_HOUR - TIMELINE_DAY_START_HOUR;
 const TIMELINE_INITIAL_VISIBLE_HOURS = 16;
 const TIMELINE_MIN_WIDTH = 860;
-const BASE_SCHEDULE_DATE = new Date(2026, 7, 18);
+/**
+ * 타임라인 기준일은 "오늘"입니다.
+ *
+ * 목업 일정은 MOCK_SCHEDULE_DATE 하루치로만 만들어져 있어서, 그 날짜를
+ * 오늘로 옮겨 읽습니다. 고정 날짜를 그대로 두면 며칠만 지나도
+ * 8월 18일에 "오늘" 배지가 붙는 상태가 됩니다.
+ */
+const MOCK_SCHEDULE_DATE = '2026-08-18';
+
+function startOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+const BASE_SCHEDULE_DATE = startOfToday();
 
 const statusLabels = {
   working: '근무 중',
@@ -369,7 +383,14 @@ export function TeamSchedule() {
   const activeTimelineMembers = useMemo(
     () =>
       timelineMembers
-        .filter((member) => member.schedule.date === selectedDateKey)
+        // 목업 하루치를 오늘 날짜로 옮겨 매칭합니다.
+        .filter((member) => {
+          const scheduleKey =
+            member.schedule.date === MOCK_SCHEDULE_DATE
+              ? formatDateKey(BASE_SCHEDULE_DATE)
+              : member.schedule.date;
+          return scheduleKey === selectedDateKey;
+        })
         .map((member) => {
           const timing = analyzeTiming(member.profile.countryCode, nowTick);
           return { ...member, status: toTimelineStatus(timing), timing };
