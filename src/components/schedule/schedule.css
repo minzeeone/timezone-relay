@@ -7,7 +7,7 @@
 }
 
 .apex-window.view-schedule .topbar {
-  grid-template-columns: 210px 472px 1fr;
+  grid-template-columns: var(--nav-col) var(--panel-col) 1fr;
 }
 
 .apex-window.view-schedule .topbar h2 {
@@ -934,5 +934,174 @@
 
   .schedule-timeline {
     min-height: 620px;
+  }
+}
+
+/* Mobile polish: let the schedule content use the full mobile width. */
+@media (max-width: 980px) {
+  .team-schedule {
+    --schedule-ui-scale: 1;
+    --schedule-right-gutter: 0px;
+    width: 100%;
+    transform: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .team-schedule {
+    grid-column: 1;
+    grid-row: 2;
+    padding-top: 0;
+  }
+
+  .schedule-main {
+    min-height: min(680px, calc(100vh - 164px));
+  }
+}
+
+/* Mobile schedule stacking fix */
+@media (max-width: 720px) {
+  .team-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-self: start;
+    height: auto;
+    min-height: max-content;
+    overflow: visible;
+    padding: 0 0 104px;
+  }
+
+  .schedule-sidebar {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+    max-height: none;
+    padding-right: 0;
+    margin-right: 0;
+    overflow: visible;
+    flex: 0 0 auto;
+  }
+
+  .schedule-card {
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  .schedule-calendar {
+    min-height: auto;
+    padding: 18px 18px 20px;
+  }
+
+  .schedule-card header {
+    margin-bottom: 16px;
+  }
+
+  .schedule-card header strong {
+    font-size: 20px;
+  }
+
+  .calendar-weekdays,
+  .calendar-grid {
+    gap: 9px 6px;
+  }
+
+  .calendar-grid button {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+  }
+
+  .schedule-filter {
+    min-height: 64px;
+    padding: 18px;
+  }
+
+  .schedule-filter:not(.is-collapsed) {
+    min-height: auto;
+  }
+
+  .schedule-filter-list {
+    max-height: none;
+  }
+
+  .schedule-filter-list button {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .schedule-main {
+    width: 100%;
+    flex: 0 0 auto;
+    min-height: 520px;
+    padding-top: 4px;
+  }
+
+  .schedule-day-head {
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .schedule-day-head h2 {
+    font-size: clamp(30px, 10vw, 42px);
+  }
+
+  .today-pill {
+    min-width: 62px;
+    height: 34px;
+    padding-inline: 18px;
+    font-size: 15px;
+  }
+
+  .timeline-range-indicator {
+    top: 54px;
+    right: 12px;
+  }
+
+  .schedule-timeline-shell {
+    height: auto;
+  }
+
+  .schedule-timeline {
+    min-height: 480px;
+    height: 480px;
+    padding-bottom: 20px;
+  }
+
+  .timeline-scale-plane {
+    height: 440px;
+  }
+
+  .time-marker strong {
+    font-size: 19px;
+  }
+}
+
+/* Mobile and tablet schedule flow fix */
+@media (max-width: 980px) {
+  .team-schedule {
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+    height: auto;
+    min-height: max-content;
+    overflow: visible;
+  }
+
+  .schedule-sidebar {
+    width: 100%;
+    max-height: none;
+    padding-right: 0;
+    margin-right: 0;
+    overflow: visible;
+    flex: 0 0 auto;
+  }
+
+  .schedule-card,
+  .schedule-main {
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
   }
 }

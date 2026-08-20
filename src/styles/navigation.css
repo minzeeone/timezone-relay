@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: center;
   padding-bottom: clamp(24px, 10vh, 110px);
-  transform: translateX(-50px);
+  transform: translateX(var(--rail-x-offset, -50px));
 }
 
 .sidebar button {

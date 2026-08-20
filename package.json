@@ -19,5 +19,8 @@
     "react-dom": "latest",
     "tailwindcss": "^4.3.3",
     "vite": "latest"
+  },
+  "devDependencies": {
+    "lighthouse": "^12.8.2"
   }
 }
