@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { activeHandoffs, handoffRecipients } from '../../data/handoffFlowMock.js';
 import { presenceOf } from '../../utils/timing.js';
 
@@ -17,6 +17,14 @@ const formatMemberMeta = (member) => {
 
 export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
   const [, setLocalTimeTick] = useState(0);
+  const dashboardRef = useRef(null);
+  const heroRef = useRef(null);
+  const statRef = useRef(null);
+  const sectionRefs = useRef({});
+  const naturalUpperHeights = useRef({});
+  const naturalSectionHeights = useRef({});
+  const [isCondensed, setIsCondensed] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({});
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -26,9 +34,83 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const dashboard = dashboardRef.current;
+    if (!dashboard) return undefined;
+
+    const updateLayout = () => {
+      const { height } = dashboard.getBoundingClientRect();
+      const clamp = (minimum, preferred, maximum) => Math.min(maximum, Math.max(minimum, preferred));
+
+      setIsCondensed((currentlyCondensed) => {
+        if (!currentlyCondensed) {
+          naturalUpperHeights.current = {
+            hero: heroRef.current?.getBoundingClientRect().height ?? 0,
+            stat: statRef.current?.getBoundingClientRect().height ?? 0,
+          };
+          Object.entries(sectionRefs.current).forEach(([name, section]) => {
+            if (section) naturalSectionHeights.current[name] = section.getBoundingClientRect().height;
+          });
+        }
+
+        const heroHeight = naturalUpperHeights.current.hero ?? 0;
+        const statHeight = naturalUpperHeights.current.stat ?? 0;
+        const upperBottom = Math.max(
+          clamp(42, height * 0.072, 86) + heroHeight,
+          clamp(76, height * 0.118, 134) + statHeight,
+        );
+
+        const sectionHeights = naturalSectionHeights.current;
+        const lowerTop = Math.min(
+          height - clamp(210, height * 0.24, 286) - (sectionHeights.handoff ?? 0),
+          height - clamp(44, height * 0.052, 74) - Math.max(
+            sectionHeights.attention ?? 0,
+            sectionHeights.request ?? 0,
+            sectionHeights.team ?? 0,
+          ),
+        );
+
+        return lowerTop - upperBottom < 32;
+      });
+    };
+
+    updateLayout();
+    const observer = new ResizeObserver(updateLayout);
+    observer.observe(dashboard);
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleSection = (sectionName) => {
+    if (!isCondensed) return;
+
+    const willExpand = !expandedSections[sectionName];
+    setExpandedSections(willExpand ? { [sectionName]: true } : {});
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const dashboard = dashboardRef.current;
+        const section = sectionRefs.current[sectionName];
+        if (!dashboard) return;
+
+        dashboard.scrollTo({
+          top: willExpand && section ? Math.max(0, section.offsetTop - 20) : 0,
+          behavior: 'smooth',
+        });
+      });
+    });
+  };
+
+  const sectionClassName = (baseName, sectionName) => (
+    `${baseName} ${expandedSections[sectionName] ? 'is-expanded' : 'is-collapsed'}`
+  );
+
   return (
-    <section className="handoff-dashboard" aria-label="AI 업무 인수인계 대시보드">
-      <section className="wire-hero">
+    <section
+      ref={dashboardRef}
+      className={`handoff-dashboard${isCondensed ? ' is-condensed' : ''}`}
+      aria-label="AI 업무 인수인계 대시보드"
+    >
+      <section className="wire-hero" ref={heroRef}>
         <p>수고하셨어요, <strong>의중님.</strong></p>
         <h2>퇴근까지 <span>9분</span> 남았어요.</h2>
         <div className="wire-hero-actions">
@@ -39,7 +121,7 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
         </div>
       </section>
 
-      <section className="wire-stat-row" aria-label="업무 요약">
+      <section className="wire-stat-row" ref={statRef} aria-label="업무 요약">
         <article>
           <i className="bi bi-check" />
           <strong>8</strong>
@@ -62,10 +144,11 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
         </article>
       </section>
 
-      <section className="wire-handoff">
-        <header>
+      <section className={sectionClassName('wire-handoff', 'handoff')} ref={(node) => { sectionRefs.current.handoff = node; }}>
+        <header onClick={() => toggleSection('handoff')}>
           <h3>진행중인 인수인계 (2)</h3>
-          <button type="button" aria-label="진행중인 인수인계 더보기">
+          <span className="wire-widget-count" aria-label="2개">2</span>
+          <button type="button" aria-expanded={!isCondensed || !!expandedSections.handoff} aria-label="진행중인 인수인계 더보기">
             <i className="bi bi-arrow-up-right" />
           </button>
         </header>
@@ -83,10 +166,11 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
         </div>
       </section>
 
-      <section className="wire-attention">
-        <header>
+      <section className={sectionClassName('wire-attention', 'attention')} ref={(node) => { sectionRefs.current.attention = node; }}>
+        <header onClick={() => toggleSection('attention')}>
           <h3>지금 확인이 필요해요</h3>
-          <button type="button" aria-label="확인 필요 더보기">
+          <span className="wire-widget-count" aria-label={`${data.attentionCount}개`}>{data.attentionCount}</span>
+          <button type="button" aria-expanded={!isCondensed || !!expandedSections.attention} aria-label="확인 필요 더보기">
             <i className="bi bi-arrow-up-right" />
           </button>
         </header>
@@ -104,10 +188,11 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
         </div>
       </section>
 
-      <section className="wire-request">
-        <header>
+      <section className={sectionClassName('wire-request', 'request')} ref={(node) => { sectionRefs.current.request = node; }}>
+        <header onClick={() => toggleSection('request')}>
           <h3>최근 요청사항 (1)</h3>
-          <button type="button" aria-label="최근 요청사항 더보기">
+          <span className="wire-widget-count" aria-label="1개">1</span>
+          <button type="button" aria-expanded={!isCondensed || !!expandedSections.request} aria-label="최근 요청사항 더보기">
             <i className="bi bi-arrow-up-right" />
           </button>
         </header>
@@ -120,10 +205,11 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
         </div>
       </section>
 
-      <section className="wire-team">
-        <header>
+      <section className={sectionClassName('wire-team', 'team')} ref={(node) => { sectionRefs.current.team = node; }}>
+        <header onClick={() => toggleSection('team')}>
           <h3>팀원 (5)</h3>
-          <button type="button" aria-label="팀원 추가">
+          <span className="wire-widget-count" aria-label="5명">5</span>
+          <button type="button" aria-expanded={!isCondensed || !!expandedSections.team} aria-label="팀원 추가">
             <i className="bi bi-plus" />
           </button>
         </header>

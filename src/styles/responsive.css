@@ -64,8 +64,11 @@
   }
 
   .apex-window.view-dashboard .notification-button {
+    flex-basis: 38px;
     width: 38px;
-    height: 23px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
   }
 
   .contact-row {
@@ -872,4 +875,23 @@
     min-height: 48px;
     font-size: 22px;
   }
+}
+
+/* Keep the rounded application frame anchored to the viewport. Dashboard
+   details scroll inside their own panel, never on the outer frame. */
+.app-shell {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100dvh;
+}
+
+.apex-window {
+  max-height: 100%;
+}
+
+.apex-window.view-dashboard {
+  overflow: hidden;
 }

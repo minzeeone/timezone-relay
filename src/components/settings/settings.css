@@ -61,7 +61,7 @@
 
 .settings-tabs {
   position: absolute;
-  top: -92px;
+  top: -99px;
   left: 116px;
   display: flex;
   align-items: flex-start;
@@ -71,7 +71,27 @@
   z-index: 3;
 }
 
+.settings-tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 2px;
+  border-radius: 999px;
+  opacity: 0;
+  background: #ff7748;
+  box-shadow: 0 -4px 16px rgba(255, 119, 72, 0.42);
+  pointer-events: none;
+  transition: width 280ms var(--ease-out), transform 360ms var(--ease-snap), opacity 160ms ease;
+}
+
+.settings-tab-indicator.is-ready {
+  opacity: 1;
+}
+
 .settings-tabs button {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -91,8 +111,39 @@
 
 .settings-tabs button.active {
   color: #ff7748;
-  border-bottom-color: #ff7748;
+  border-bottom-color: transparent;
   background: linear-gradient(180deg, rgba(255, 119, 72, 0.12), rgba(255, 119, 72, 0.02));
+}
+
+.settings-tabs button.active i {
+  animation: settingsTabIconIn 320ms var(--ease-snap) both;
+}
+
+.settings-copy,
+.settings-preview,
+.settings-panel-list {
+  animation: settingsTabContentIn 300ms var(--ease-out) both;
+}
+
+@keyframes settingsTabIconIn {
+  0% { opacity: 0.45; transform: scale(0.72) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@keyframes settingsTabContentIn {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-tab-indicator,
+  .settings-tabs button,
+  .settings-copy,
+  .settings-preview,
+  .settings-panel-list {
+    animation: none;
+    transition: none;
+  }
 }
 
 .settings-tabs i {
@@ -486,7 +537,7 @@
   }
 
   .settings-tabs {
-    top: -94px;
+    top: -105px;
     left: 102px;
     max-width: calc(100vw - 460px);
     overflow-x: auto;

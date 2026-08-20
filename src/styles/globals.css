@@ -196,8 +196,12 @@ select {
 .notification-button {
   position: relative;
   display: grid;
+  flex: 0 0 auto;
   width: 46px;
   height: 46px;
+  min-width: 46px;
+  min-height: 46px;
+  aspect-ratio: 1;
   place-items: center;
   border: 1px solid var(--glass-line);
   border-radius: 50%;
