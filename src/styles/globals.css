@@ -66,9 +66,15 @@ select {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 210px 472px minmax(803px, 1fr);
+  --nav-col: clamp(96px, 10vw, 210px);
+  --panel-col: clamp(300px, 26vw, 472px);
+  --rail-x-offset: -50px;
+  --brand-logo-x-offset: var(--rail-x-offset);
+  --brand-logo-width: clamp(116px, 8vw, 154px);
+  grid-template-columns: var(--nav-col) var(--panel-col) minmax(0, 1fr);
   grid-template-rows: clamp(64px, 8.5vh, 92px) minmax(0, 1fr);
   gap: 0 14px;
+  width: 100%;
   height: 100%;
   min-height: 0;
   max-width: 2020px;
@@ -85,7 +91,11 @@ select {
 }
 
 .apex-window.profile-open {
-  grid-template-columns: 170px minmax(320px, 370px) minmax(560px, 1fr) minmax(330px, 430px);
+  grid-template-columns:
+    clamp(82px, 8vw, 170px)
+    clamp(280px, 22vw, 370px)
+    minmax(0, 1fr)
+    clamp(300px, 24vw, 430px);
   gap: 0 10px;
 }
 
@@ -105,12 +115,16 @@ select {
   grid-column: 1 / -1;
   grid-row: 1;
   display: grid;
-  grid-template-columns: 210px 472px 1fr;
+  grid-template-columns: var(--nav-col) var(--panel-col) 1fr;
   align-items: start;
 }
 
 .apex-window.profile-open .topbar {
-  grid-template-columns: 170px minmax(320px, 370px) minmax(560px, 1fr) minmax(330px, 430px);
+  grid-template-columns:
+    clamp(82px, 8vw, 170px)
+    clamp(280px, 22vw, 370px)
+    minmax(0, 1fr)
+    clamp(300px, 24vw, 430px);
   gap: 0 10px;
 }
 
@@ -122,31 +136,35 @@ select {
 }
 
 .topbar h1 {
-  font-size: 51px;
+  font-size: clamp(38px, 2.8vw, 51px);
   font-weight: 800;
 }
 
 .topbar .brand-logo {
   display: flex;
+  flex: 0 0 var(--brand-logo-width);
   align-items: center;
   justify-content: center;
-  width: 210px;
-  height: 54px;
-  transform: translate(-30px, 30px)
+  justify-self: center;
+  width: var(--brand-logo-width);
+  max-width: var(--brand-logo-width);
+  height: clamp(42px, 4vw, 54px);
+  transform: translate(var(--brand-logo-x-offset), clamp(16px, 2vw, 30px));
 }
 
 .topbar .brand-logo img {
   display: block;
-  width: 176px;
+  width: 100%;
+  min-width: 96px;
   height: auto;
   max-height: 110px;
   object-fit: contain;
-  object-position: left center;
+  object-position: center;
 }
 
 .topbar h2 {
   margin-left: 14px;
-  font-size: 38px;
+  font-size: clamp(31px, 2.3vw, 38px);
   color: #d9d9e5;
   font-weight: 800;
 }

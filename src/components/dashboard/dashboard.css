@@ -159,9 +159,9 @@
 
 .wire-stat-row article {
   display: grid;
-  grid-template-columns: 32px auto;
+  grid-template-columns: auto;
   grid-template-rows: auto auto;
-  column-gap: 9px;
+  column-gap: 0;
   align-items: center;
   color: #fff;
   animation: dashboardScalePop 420ms var(--ease-out) both;
@@ -184,21 +184,32 @@
 }
 
 .wire-stat-row i {
-  display: grid;
-  width: 25px;
-  height: 25px;
-  grid-row: 1 / 3;
-  place-items: center;
-  border-radius: 50%;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.24);
-  font-size: 13px;
-  transition: transform 180ms var(--ease-snap), background 180ms ease;
+  display: none;
 }
 
 .wire-stat-row article:hover i {
   background: rgba(255, 255, 255, 0.34);
   transform: scale(1.08);
+}
+
+@media (max-width: 720px) {
+  .wire-stat-row article {
+    grid-template-columns: 32px auto;
+    column-gap: 9px;
+  }
+
+  .wire-stat-row i {
+    display: grid;
+    width: 25px;
+    height: 25px;
+    grid-row: 1 / 3;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.24);
+    font-size: 13px;
+    transition: transform 180ms var(--ease-snap), background 180ms ease;
+  }
 }
 
 .wire-stat-row strong {
@@ -615,4 +626,42 @@
 
 .wire-member button i {
   font-size: 18px;
+}
+
+/* Grouped dashboard section rows */
+.wire-section-card {
+  display: grid;
+  gap: 0;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 19px;
+  background: rgba(29, 18, 15, 0.64);
+  box-shadow: 0 0 22px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  animation: dashboardFadeLift 460ms var(--ease-out) both;
+}
+
+.wire-section-card .wire-handoff-list {
+  gap: 0;
+}
+
+.wire-section-card .wire-task-row,
+.wire-section-card .wire-handoff-row {
+  margin-top: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.wire-section-card .wire-task-row + .wire-task-row,
+.wire-section-card .wire-handoff-row + .wire-handoff-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wire-section-card .wire-task-row:hover,
+.wire-section-card .wire-handoff-row:hover {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: none;
 }

@@ -69,8 +69,9 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
             <i className="bi bi-arrow-up-right" />
           </button>
         </header>
-        <div className="wire-handoff-list">
-          {activeHandoffs.map((handoff) => (
+        <div className="wire-section-card">
+          <div className="wire-handoff-list">
+            {activeHandoffs.map((handoff) => (
             <button className="wire-handoff-row" type="button" key={handoff.title} onClick={onOpenMessenger}>
               <i className={`bi ${handoff.icon}`} />
               <span>{handoff.title}</span>
@@ -78,6 +79,7 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
               <em>{handoff.status}</em>
             </button>
           ))}
+          </div>
         </div>
       </section>
 
@@ -88,16 +90,18 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
             <i className="bi bi-arrow-up-right" />
           </button>
         </header>
-        <button className="wire-task-row" type="button" onClick={onOpenMessenger}>
+        <div className="wire-section-card">
+          <button className="wire-task-row" type="button" onClick={onOpenMessenger}>
           <span>PR#162 검토</span>
           <small>Aurora</small>
           <i className="bi bi-chevron-right" />
         </button>
-        <button className="wire-task-row" type="button" onClick={onOpenMessenger}>
+          <button className="wire-task-row" type="button" onClick={onOpenMessenger}>
           <span>운영환경 배포 중단</span>
           <small>Aurora</small>
           <i className="bi bi-chevron-right" />
         </button>
+        </div>
       </section>
 
       <section className="wire-request">
@@ -107,11 +111,13 @@ export function HandoffDashboard({ data, onOpenMessenger, onOpenShiftEnd }) {
             <i className="bi bi-arrow-up-right" />
           </button>
         </header>
-        <button className="wire-task-row" type="button" onClick={onOpenMessenger}>
+        <div className="wire-section-card">
+          <button className="wire-task-row" type="button" onClick={onOpenMessenger}>
           <span>Aurora PR#132 Merge</span>
           <small>3시간 전</small>
           <i className="bi bi-chevron-right" />
         </button>
+        </div>
       </section>
 
       <section className="wire-team">
