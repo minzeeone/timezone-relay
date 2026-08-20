@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AcronymText } from './components/AcronymText.jsx';
 import { Avatar } from './components/Avatar.jsx';
 import { HandoffDashboard } from './components/dashboard/HandoffDashboard.jsx';
@@ -317,191 +317,221 @@ const settingsTabs = [
   { id: 'account', label: '계정', icon: 'bi-person-circle' },
 ];
 
-/**
- * 설정 본문을 컨테이너 높이에 맞춰 자동으로 축소합니다.
- *
- * 고정값을 하나씩 줄이는 방식은 어느 화면에서 또 넘칠지 보장할 수 없어서,
- * 넘치는 만큼 비율을 계산해 축소합니다. 화면 크기와 무관하게 항상 한 화면에 들어옵니다.
- * 축소 하한(0.72)보다 더 줄여야 하는 극단적인 경우에만 스크롤을 허용합니다.
- */
-function useFitToHeight() {
-  const outerRef = useRef(null);
-  const innerRef = useRef(null);
-
-  useEffect(() => {
-    const outer = outerRef.current;
-    const inner = innerRef.current;
-    if (!outer || !inner) return undefined;
-
-    const fit = () => {
-      // 원래 크기를 알아야 하므로 배율을 되돌리고 다시 잰다.
-      // 폭 보정(width: 100%/scale)이 걸려 있어 배율이 높이에도 영향을 주므로,
-      // 되돌린 뒤 강제로 레이아웃을 확정시키고 잰다.
-      inner.style.setProperty('--fit-scale', '1');
-      inner.getBoundingClientRect();
-
-      const available = outer.clientHeight;
-      const needed = inner.scrollHeight;
-      if (!available || !needed) return;
-
-      const scale = Math.min(1, Math.max(0.62, available / needed));
-      inner.style.setProperty('--fit-scale', String(scale));
-
-      // scale 은 그리는 크기만 줄이고 레이아웃 높이는 그대로여서,
-      // 다 담긴 경우에도 스크롤바가 남습니다. 축소한 뒤 실제로 담겼는지로 판단합니다.
-      outer.style.overflowY = needed * scale <= available + 1 ? 'hidden' : 'auto';
-    };
-
-    // 크기 변화 직후에는 레이아웃이 아직 확정되지 않아 한 번만 재면 빗나갑니다.
-    // 즉시 한 번, 다음 프레임에 한 번 더 잽니다.
-    // 배율과 높이가 서로 물려 있어 한 번으로는 수렴하지 않습니다.
-    // 연속 호출하면 두세 번 안에 값이 안정됩니다.
-    const fitTwice = () => {
-      fit();
-      fit();
-      requestAnimationFrame(() => {
-        fit();
-        fit();
-      });
-    };
-
-    fitTwice();
-
-    // inner 는 관찰하지 않습니다. 배율을 바꾸면 inner 크기가 다시 바뀌어
-    // ResizeObserver 가 루프로 판단하고 콜백을 멈춥니다.
-    const observer = new ResizeObserver(fitTwice);
-    observer.observe(outer);
-    window.addEventListener('resize', fitTwice);
-
-    // 웹폰트가 늦게 오면 글자 높이가 바뀌므로 그때 다시 잽니다.
-    if (document.fonts?.ready) document.fonts.ready.then(fitTwice);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', fitTwice);
-    };
-  }, []);
-
-  return { outerRef, innerRef };
-}
+const settingsPanelData = {
+  personal: {
+    title: '개인',
+    description: '프로필과 근무 시간, 시간대 등 개인 업무 정보를 관리합니다.',
+    icon: 'bi-person',
+    rows: [
+      { label: '이름', value: '김의중' },
+      { label: '이메일', value: 'roplekorea@example.com' },
+      { label: '시간대', value: '대한민국 서울 | KST' },
+      { label: '언어', value: '한국어', flag: 'KR' },
+    ],
+    details: [
+      { label: '내 소개', value: '', action: '편집' },
+      { label: '소셜 연동 관리', value: '', action: '편집', socials: ['bi-telegram', 'bi-linkedin', 'bi-slack', 'bi-github'] },
+      { label: '프로필 정보 공개 여부', value: '전체 공개', action: '편집' },
+    ],
+    footer: { label: '근무 시간', value: '08:30 - 17:30', action: '편집' },
+  },
+  workflow: {
+    title: '워크플로우',
+    description: '근무 종료와 인수인계 생성 흐름을 관리합니다.',
+    icon: 'bi-activity',
+    rows: [
+      { label: '인수인계 알림', value: '근무 종료 15분 전' },
+      { label: '자동 요약 범위', value: '최근 24시간' },
+      { label: '우선순위 정렬', value: 'Blocker 먼저' },
+      { label: '현지어 변환', value: '켜짐' },
+    ],
+    details: [
+      { label: '브리핑 미리보기', value: '전송 전 확인', action: '편집' },
+      { label: '메신저 카드 전달', value: '확인 후 전송', action: '편집' },
+      { label: '추가 요청사항', value: '마지막 페이지 반영', action: '편집' },
+    ],
+    footer: { label: '기본 흐름', value: '생성 → 검토 → 전송', action: '편집' },
+  },
+  team: {
+    title: '팀',
+    description: '인수인계 대상과 팀 표시 정보를 관리합니다.',
+    icon: 'bi-people',
+    rows: [
+      { label: '기본 인수인계 순서', value: '서울 > 도쿄 > 미국' },
+      { label: '자리비움 팀원 표시', value: '켜짐' },
+      { label: '현지 시간 자동 표기', value: 'timing.js 기준' },
+      { label: '팀원 목록', value: '5명' },
+    ],
+    details: [
+      { label: 'Aurora 기본 인계자', value: 'Waguri Kaoruko · 도쿄', action: '편집' },
+      { label: '프로젝트 범위', value: '진행 중 프로젝트', action: '편집' },
+      { label: '상태 표시', value: '근무중 / 회의중 / 자리비움', action: '편집' },
+    ],
+    footer: { label: '팀 기준 시간대', value: 'KST · JST · EST', action: '편집' },
+  },
+  environment: {
+    title: '환경설정',
+    description: '알림, 언어, 표시 옵션 등 사용 환경을 관리합니다.',
+    icon: 'bi-gear',
+    rows: [
+      { label: '테마', value: 'Dark Glass' },
+      { label: '알림', value: '켜짐' },
+      { label: '기본 언어', value: '한국어', flag: 'KR' },
+      { label: '시간 표시', value: '24시간제' },
+    ],
+    details: [
+      { label: '브라우저 알림', value: '중요 항목만', action: '편집' },
+      { label: '애니메이션', value: '켜짐', action: '편집' },
+      { label: '접근성 표시', value: '기본', action: '편집' },
+    ],
+    footer: { label: '데이터 새로고침', value: '수동', action: '편집' },
+  },
+  account: {
+    title: '계정',
+    description: '로그인 계정과 보안 정보를 관리합니다.',
+    icon: 'bi-person-circle',
+    rows: [
+      { label: '계정 유형', value: '개발팀' },
+      { label: '로그인 이메일', value: 'roplekorea@example.com' },
+      { label: '권한', value: '관리자' },
+      { label: '세션', value: '활성' },
+    ],
+    details: [
+      { label: '비밀번호', value: '최근 변경 12일 전', action: '변경' },
+      { label: '연결된 서비스', value: 'Github · Slack', action: '관리' },
+      { label: '계정 공개 범위', value: '조직 내부', action: '편집' },
+    ],
+    footer: { label: '보안 알림', value: '켜짐', action: '편집' },
+  },
+};
 
 function SettingsPanel() {
-  const { outerRef, innerRef } = useFitToHeight();
+  const [activeSettingsTab, setActiveSettingsTab] = useState('personal');
+  const activeSettings = settingsPanelData[activeSettingsTab] ?? settingsPanelData.personal;
   const profileTiming = presenceOf('KR');
-  const settingRows = [
-    { label: '이름', value: '김의중' },
-    { label: '이메일', value: 'roplekorea@example.com' },
-    { label: '시간대', value: '대한민국 서울 | KST' },
-    { label: '언어', value: '한국어', flag: 'KR' },
-  ];
-  const privacyRows = [
-    { label: '내 소개', value: '', action: '편집' },
-    { label: '소셜 연동 관리', value: '', action: '편집', socials: ['bi-telegram', 'bi-linkedin', 'bi-slack', 'bi-github'] },
-    { label: '프로필 정보 공개 여부', value: '전체 공개', action: '편집' },
-  ];
+  const settingRows = activeSettings.rows;
+  const privacyRows = activeSettings.details;
+  const footerRow = activeSettings.footer;
 
   return (
     <main className="settings-page" aria-label="설정">
-      {/* 탭과 설명을 한 줄로 묶습니다. 각각 absolute 로 떠 있으면 서로를 몰라서
-          화면이 좁아질 때 겹칩니다. flex 로 묶으면 서로 밀어냅니다. */}
-      <div className="settings-header-row">
-        <nav className="settings-tabs" aria-label="설정 분류">
-          {settingsTabs.map((tab) => (
-            <button className={tab.id === 'personal' ? 'active' : ''} type="button" key={tab.id}>
-              <i className={'bi ' + tab.icon} />
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </nav>
+      <nav className="settings-tabs" aria-label="설정 분류">
+        {settingsTabs.map((tab) => (
+          <button
+            className={tab.id === activeSettingsTab ? 'active' : ''}
+            type="button"
+            key={tab.id}
+            onClick={() => setActiveSettingsTab(tab.id)}
+            aria-pressed={tab.id === activeSettingsTab}
+          >
+            <i className={'bi ' + tab.icon} />
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </nav>
 
-        <section className="settings-copy" aria-label="현재 설정 섹션">
-          <i className="bi bi-person" />
-          <div>
-            <strong>개인</strong>
-            <p>프로필과 근무 시간, 시간대 등 개인 업무 정보를 관리합니다.</p>
-          </div>
-        </section>
-      </div>
+      <section className="settings-copy" aria-label="현재 설정 섹션">
+        <i className={'bi ' + activeSettings.icon} />
+        <div>
+          <strong>{activeSettings.title}</strong>
+          <p>{activeSettings.description}</p>
+        </div>
+      </section>
 
-      {/* 내용이 컨테이너보다 크면 그 비율만큼 축소해 항상 한 화면에 담습니다. */}
-      <div className="settings-body" ref={outerRef}>
-        <div className="settings-body-inner" ref={innerRef}>
-        <section className="settings-preview" aria-label="프로필 미리보기">
-          <h3>프로필 미리보기</h3>
-          <article className="settings-profile-card">
-            <div className="settings-profile-banner">
-              <img src={profileBanner} alt="프로필 배너" />
-            </div>
-            <div className="settings-profile-body">
-              <div className="settings-preview-avatar">
-                <span>김</span>
+      <section className="settings-preview" aria-label={activeSettingsTab === 'personal' ? '프로필 미리보기' : activeSettings.title + ' 미리보기'}>
+        {activeSettingsTab === 'personal' ? (
+          <>
+            <h3>프로필 미리보기</h3>
+            <article className="settings-profile-card">
+              <div className="settings-profile-banner">
+                <img src={profileBanner} alt="프로필 배너" />
               </div>
-              <strong>김의중</strong>
-              <small>roplekorea@example.com</small>
-              <div className="settings-profile-pills">
-                <span><i className="bi bi-globe2" /> 대한민국 서울</span>
-                <span><i className="bi bi-clock" /> {profileTiming.clock} - KST</span>
-              </div>
-              <div className="settings-profile-section">
-                <b>소개</b>
-                <p>Front Engineer of APEX Company<br />email: roplekorea@example.com<br />tel: 123-456-2101</p>
-              </div>
-              <div className="settings-profile-section social">
-                <b>소셜 연결</b>
-                <div>
-                  <span><i className="bi bi-github" /> Github</span>
-                  <span><i className="bi bi-slack" /> Slack</span>
-                  <span><i className="bi bi-linkedin" /> LinkedIn</span>
-                  <span><i className="bi bi-telegram" /> Telegram</span>
+              <div className="settings-profile-body">
+                <div className="settings-preview-avatar">
+                  <span>김</span>
+                </div>
+                <strong>김의중</strong>
+                <small>roplekorea@example.com</small>
+                <div className="settings-profile-pills">
+                  <span><i className="bi bi-globe2" /> 대한민국 서울</span>
+                  <span><i className="bi bi-clock" /> {profileTiming.clock} - KST</span>
+                </div>
+                <div className="settings-profile-section">
+                  <b>소개</b>
+                  <p>Front Engineer of APEX Company<br />email: roplekorea@example.com<br />tel: 123-456-2101</p>
+                </div>
+                <div className="settings-profile-section social">
+                  <b>소셜 연결</b>
+                  <div>
+                    <span><i className="bi bi-github" /> Github</span>
+                    <span><i className="bi bi-slack" /> Slack</span>
+                    <span><i className="bi bi-linkedin" /> LinkedIn</span>
+                    <span><i className="bi bi-telegram" /> Telegram</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </article>
-        </section>
-
-        <div className="settings-link-line" aria-hidden="true"><span /></div>
-
-        <section className="settings-panel-list" aria-label="개인 설정 목록">
-          <article className="settings-card account-info">
-            {settingRows.map((row) => (
-              <div className="settings-row" key={row.label}>
-                <span>{row.label}</span>
-                <strong className={row.flag ? 'settings-language-value' : ''}>
-                  {row.flag && <em>{row.flag}</em>}
-                  {row.value}
-                </strong>
-                <button type="button">수정</button>
+            </article>
+          </>
+        ) : (
+          <>
+            <h3>{activeSettings.title}</h3>
+            <article className="settings-context-card settings-card">
+              <i className={'bi ' + activeSettings.icon} />
+              <small>{activeSettings.title}</small>
+              <strong>{activeSettings.description}</strong>
+              <div>
+                {settingRows.slice(0, 3).map((row) => (
+                  <span key={row.label}>
+                    <b>{row.label}</b>
+                    <em>{row.value}</em>
+                  </span>
+                ))}
               </div>
-            ))}
-          </article>
+            </article>
+          </>
+        )}
+      </section>
 
-          <article className="settings-card privacy-info">
-            {privacyRows.map((row) => (
-              <div className="settings-row" key={row.label}>
-                <span>{row.label}</span>
-                {row.socials ? (
-                  <div className="settings-social-icons">
-                    {row.socials.map((icon) => <i className={'bi ' + icon} key={icon} />)}
-                  </div>
-                ) : (
-                  <strong>{row.value}</strong>
-                )}
-                <button type="button">{row.action}</button>
-              </div>
-            ))}
-          </article>
+      <div className="settings-link-line" aria-hidden="true"><span /></div>
 
-          <article className="settings-card work-hours">
-            <div className="settings-row">
-              <span>근무 시간</span>
-              <strong>08:30 - 17:30</strong>
-              <button type="button">편집</button>
+      <section className="settings-panel-list" aria-label={activeSettings.title + ' 설정 목록'}>
+        <article className="settings-card account-info">
+          {settingRows.map((row) => (
+            <div className="settings-row" key={row.label}>
+              <span>{row.label}</span>
+              <strong className={row.flag ? 'settings-language-value' : ''}>
+                {row.flag && <em>{row.flag}</em>}
+                {row.value}
+              </strong>
+              <button type="button">수정</button>
             </div>
-          </article>
-        </section>
-      </div>
-      </div>
+          ))}
+        </article>
 
+        <article className="settings-card privacy-info">
+          {privacyRows.map((row) => (
+            <div className="settings-row" key={row.label}>
+              <span>{row.label}</span>
+              {row.socials ? (
+                <div className="settings-social-icons">
+                  {row.socials.map((icon) => <i className={'bi ' + icon} key={icon} />)}
+                </div>
+              ) : (
+                <strong>{row.value}</strong>
+              )}
+              <button type="button">{row.action}</button>
+            </div>
+          ))}
+        </article>
+
+        <article className="settings-card work-hours">
+          <div className="settings-row">
+            <span>{footerRow.label}</span>
+            <strong>{footerRow.value}</strong>
+            <button type="button">{footerRow.action}</button>
+          </div>
+        </article>
+      </section>
     </main>
   );
 }
@@ -562,7 +592,7 @@ function App() {
   const isDashboardView = activeView === 'dashboard';
   const isSettingsView = activeView === 'settings';
 
-  // 헤더 날짜는 고정값이 아니라 오늘 날짜로 표시합니다.
+  
   const todayLabel = useMemo(
     () => new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date()),
     [],
@@ -1699,6 +1729,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

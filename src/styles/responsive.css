@@ -7,7 +7,7 @@
   .apex-window {
     --nav-col: clamp(84px, 8vw, 96px);
     --rail-x-offset: clamp(-24px, -1.6vw, -16px);
-    --brand-logo-width: clamp(108px, 8vw, 132px);
+    --brand-logo-width: clamp(65px, 4.8vw, 79px);
     grid-template-columns: var(--nav-col) clamp(280px, 30vw, 366px) minmax(0, 1fr);
     padding: 44px 36px 36px;
   }
@@ -32,12 +32,12 @@
   .topbar .brand-logo {
     width: var(--brand-logo-width);
     max-width: var(--brand-logo-width);
-    height: 42px;
+    height: 25px;
   }
 
   .topbar .brand-logo img {
     width: 100%;
-    min-width: 96px;
+    min-width: 58px;
     max-height: none;
   }
 
@@ -65,7 +65,7 @@
 
   .apex-window.view-dashboard .notification-button {
     width: 38px;
-    height: 38px;
+    height: 23px;
   }
 
   .contact-row {
@@ -140,7 +140,7 @@
     display: grid;
     --nav-col: clamp(96px, 11vw, 128px);
     --panel-col: clamp(220px, 30vw, 320px);
-    --brand-logo-width: clamp(100px, 11vw, 132px);
+    --brand-logo-width: clamp(60px, 6.6vw, 79px);
     grid-template-columns: var(--nav-col) minmax(220px, var(--panel-col)) minmax(0, 1fr);
     grid-template-rows: clamp(56px, 8vh, 76px) minmax(0, 1fr);
     position: relative;
@@ -161,14 +161,14 @@
   .topbar .brand-logo {
     width: var(--brand-logo-width);
     max-width: var(--brand-logo-width);
-    height: 38px;
+    height: 23px;
     align-items: center;
     transform: translate(var(--brand-logo-x-offset), clamp(10px, 2vw, 18px));
   }
 
   .topbar .brand-logo img {
     width: 100%;
-    min-width: 96px;
+    min-width: 58px;
     max-height: none;
   }
 
@@ -386,7 +386,7 @@
 
   .apex-window {
     --brand-logo-x-offset: 0px;
-    --brand-logo-width: clamp(96px, 28vw, 124px);
+    --brand-logo-width: clamp(58px, 16.8vw, 74px);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 56px minmax(0, 1fr);
@@ -403,12 +403,12 @@
 
   .topbar .brand-logo {
     justify-self: start;
-    height: 34px;
+    height: 20px;
     transform: translate(0, 0);
   }
 
   .topbar .brand-logo img {
-    min-width: 88px;
+    min-width: 53px;
   }
 
   .message-list,
@@ -549,5 +549,327 @@
   .handoff-dashboard {
     padding-bottom: 176px;
     scroll-padding-bottom: 176px;
+  }
+}
+
+/* Final settings header responsiveness */
+@media (min-width: 721px) {
+  .apex-window.view-settings .settings-page {
+    overflow: visible;
+  }
+
+  .apex-window.view-settings .settings-tabs {
+    min-width: 0;
+    width: min(535px, calc(100% - var(--settings-tabs-left, 116px) - var(--settings-copy-width, 520px) - 18px));
+    max-width: min(535px, calc(100% - var(--settings-tabs-left, 116px) - var(--settings-copy-width, 520px) - 18px));
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .apex-window.view-settings .settings-tabs button {
+    flex: 0 0 auto;
+  }
+}
+/* Ultra-wide desktop expansion: 3440x2160 and larger. */
+@media (min-width: 3440px) and (min-height: 1600px) {
+  .app-shell {
+    padding: clamp(48px, 2.2vw, 78px);
+  }
+
+  .apex-window {
+    --nav-col: clamp(230px, 8vw, 292px);
+    --panel-col: clamp(560px, 20vw, 690px);
+    --rail-x-offset: -62px;
+    --brand-logo-width: clamp(98px, 3.1vw, 120px);
+    max-width: min(3260px, calc(100vw - 128px));
+    grid-template-columns: var(--nav-col) var(--panel-col) minmax(0, 1fr);
+    grid-template-rows: clamp(112px, 7vh, 148px) minmax(0, 1fr);
+    gap: 0 28px;
+    padding: clamp(88px, 5vh, 124px) clamp(116px, 4.8vw, 168px) clamp(72px, 4vh, 110px) clamp(104px, 4.4vw, 152px);
+    border-radius: 70px;
+  }
+
+  .topbar {
+    grid-template-columns: var(--nav-col) var(--panel-col) minmax(0, 1fr);
+  }
+
+  .topbar .brand-logo {
+    width: var(--brand-logo-width);
+    max-width: var(--brand-logo-width);
+    height: clamp(34px, 1.8vw, 44px);
+  }
+
+  .topbar .brand-logo img {
+    min-width: 82px;
+  }
+
+  .topbar h2 {
+    font-size: clamp(46px, 1.7vw, 60px);
+    line-height: 1.14;
+  }
+
+  .sidebar {
+    gap: clamp(34px, 2.2vh, 52px);
+    transform: translateX(var(--rail-x-offset));
+  }
+
+  .sidebar button {
+    width: clamp(96px, 3.2vw, 118px);
+    height: clamp(96px, 3.2vw, 118px);
+  }
+
+  .sidebar i {
+    font-size: clamp(40px, 1.35vw, 52px);
+  }
+
+  .avatar {
+    width: 88px;
+    height: 88px;
+    font-size: 34px;
+  }
+
+  .apex-window.view-dashboard .topbar {
+    grid-template-columns: var(--nav-col) minmax(0, 1fr) auto;
+  }
+
+  .wire-hero {
+    top: clamp(104px, 8vh, 172px);
+    left: clamp(30px, 1.9vw, 72px);
+    gap: 22px;
+  }
+
+  .wire-hero h3 {
+    font-size: clamp(40px, 1.5vw, 52px);
+  }
+
+  .wire-hero h4 {
+    font-size: clamp(70px, 2.65vw, 92px);
+    line-height: 1.12;
+  }
+
+  .wire-hero-actions button {
+    min-width: 178px;
+    min-height: 58px;
+    padding-inline: 26px;
+    font-size: 22px;
+  }
+
+  .wire-stat-strip {
+    right: clamp(92px, 4.6vw, 170px);
+    grid-template-columns: repeat(4, 118px);
+    gap: clamp(46px, 2.6vw, 86px);
+  }
+
+  .wire-stat-value {
+    font-size: clamp(74px, 2.8vw, 96px);
+  }
+
+  .wire-stat-row p {
+    font-size: 21px;
+  }
+
+  .wire-attention,
+  .wire-handoffs,
+  .wire-requests,
+  .wire-team {
+    width: clamp(470px, 18vw, 590px);
+  }
+
+  .wire-handoffs,
+  .wire-requests {
+    transform: translateX(-52%);
+  }
+
+  .wire-section header h3 {
+    font-size: clamp(34px, 1.25vw, 44px);
+  }
+
+  .attention-pill,
+  .handoff-mini,
+  .request-pill {
+    min-height: 88px;
+    font-size: 23px;
+  }
+
+  .wire-member {
+    min-height: 78px;
+    grid-template-columns: 62px 1fr 36px 36px;
+  }
+
+  .wire-member-avatar {
+    width: 62px;
+    height: 62px;
+    font-size: 28px;
+  }
+
+  .wire-member strong {
+    font-size: 22px;
+  }
+
+  .wire-member small {
+    font-size: 15px;
+  }
+
+  .message-list {
+    padding-inline: 24px;
+  }
+
+  .panel-head > strong {
+    font-size: 34px;
+  }
+
+  .contact-row {
+    grid-template-columns: 78px 1fr 70px;
+    min-height: 122px;
+    padding-inline: 24px;
+  }
+
+  .contact-row .avatar {
+    width: 78px;
+    height: 78px;
+    font-size: 30px;
+  }
+
+  .contact-text strong {
+    font-size: 27px;
+  }
+
+  .contact-text small {
+    font-size: 19px;
+  }
+
+  .chat-head,
+  .composer {
+    padding-inline: 42px;
+  }
+
+  .bubble {
+    font-size: 21px;
+  }
+
+  .schedule-page {
+    gap: 58px;
+  }
+
+  .schedule-sidebar {
+    width: clamp(500px, 16vw, 620px);
+    gap: 28px;
+  }
+
+  .schedule-calendar {
+    min-height: 470px;
+    padding: 34px 42px;
+  }
+
+  .schedule-card header strong {
+    font-size: 32px;
+  }
+
+  .calendar-weekdays {
+    font-size: 21px;
+  }
+
+  .calendar-grid button {
+    width: 46px;
+    height: 46px;
+    font-size: 24px;
+  }
+
+  .schedule-filter {
+    min-height: 240px;
+    padding: 34px 42px;
+  }
+
+  .schedule-projects {
+    min-height: 260px;
+  }
+
+  .schedule-filter-list button {
+    font-size: 24px;
+  }
+
+  .schedule-main h2,
+  .schedule-day-head h2 {
+    font-size: clamp(54px, 2vw, 72px);
+    line-height: 1.14;
+  }
+
+  .time-marker strong {
+    font-size: 28px;
+  }
+
+  .timeline-scale-plane {
+    height: 760px;
+  }
+
+  .timeline-avatar {
+    width: 92px;
+    height: 92px;
+  }
+
+  .shift-copy strong {
+    font-size: 28px;
+  }
+
+  .shift-copy small {
+    font-size: 18px;
+  }
+
+  .apex-window.view-settings .settings-page {
+    grid-template-columns: minmax(500px, 610px) clamp(110px, 5vw, 170px) minmax(980px, 1260px);
+    column-gap: clamp(54px, 2.2vw, 86px);
+  }
+
+  .apex-window.view-settings .settings-tabs {
+    width: 760px;
+    max-width: 760px;
+  }
+
+  .apex-window.view-settings .settings-tabs button {
+    height: 62px;
+    padding-inline: 20px;
+    font-size: 28px;
+  }
+
+  .apex-window.view-settings .settings-tabs i {
+    font-size: 30px;
+  }
+
+  .settings-preview h3 {
+    font-size: 32px;
+  }
+
+  .settings-profile-banner {
+    height: 230px;
+  }
+
+  .settings-profile-body {
+    padding: 82px 54px 42px;
+  }
+
+  .settings-preview-avatar {
+    width: 118px;
+    height: 118px;
+    font-size: 48px;
+  }
+
+  .settings-row {
+    min-height: 86px;
+    grid-template-columns: minmax(260px, 330px) minmax(0, 1fr) 124px;
+  }
+
+  .settings-row > span {
+    font-size: 30px;
+  }
+
+  .settings-row > strong,
+  .settings-social-icons {
+    font-size: 22px;
+  }
+
+  .settings-row button {
+    min-width: 124px;
+    min-height: 48px;
+    font-size: 22px;
   }
 }

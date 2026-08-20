@@ -70,7 +70,7 @@ select {
   --panel-col: clamp(300px, 26vw, 472px);
   --rail-x-offset: -50px;
   --brand-logo-x-offset: var(--rail-x-offset);
-  --brand-logo-width: clamp(116px, 8vw, 154px);
+  --brand-logo-width: clamp(70px, 4.8vw, 92px);
   grid-template-columns: var(--nav-col) var(--panel-col) minmax(0, 1fr);
   grid-template-rows: clamp(64px, 8.5vh, 92px) minmax(0, 1fr);
   gap: 0 14px;
@@ -80,7 +80,9 @@ select {
   max-width: 2020px;
   margin: 0 auto;
   padding: clamp(28px, 5vh, 74px) clamp(42px, 5.2vw, 102px) clamp(28px, 4vh, 58px) clamp(42px, 4.7vw, 92px);
-  overflow: hidden;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 48px;
   background: rgba(8, 8, 9, 0.78);
@@ -99,6 +101,11 @@ select {
   gap: 0 10px;
 }
 
+.apex-window::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
 .apex-window::before {
   position: absolute;
   inset: 0;
@@ -148,14 +155,14 @@ select {
   justify-self: center;
   width: var(--brand-logo-width);
   max-width: var(--brand-logo-width);
-  height: clamp(42px, 4vw, 54px);
+  height: clamp(25px, 2.4vw, 32px);
   transform: translate(var(--brand-logo-x-offset), clamp(16px, 2vw, 30px));
 }
 
 .topbar .brand-logo img {
   display: block;
   width: 100%;
-  min-width: 96px;
+  min-width: 58px;
   height: auto;
   max-height: 110px;
   object-fit: contain;
@@ -342,3 +349,5 @@ select {
   font-size: 19px;
   font-weight: 620;
 }
+
+

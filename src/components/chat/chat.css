@@ -1370,3 +1370,34 @@
 .send:active {
   transform: translateY(0) scale(0.96);
 }
+/* Text-fit pass for compact notebook widths. */
+@media (min-width: 901px) and (max-width: 1120px) {
+  .contact-row {
+    grid-template-columns: 50px minmax(0, 1fr) 44px;
+    gap: 9px;
+  }
+
+  .contact-row .avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .contact-text {
+    gap: 5px;
+  }
+
+  .contact-text strong {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .contact-text small {
+    font-size: 12.5px;
+    line-height: 1.25;
+  }
+
+  .contact-meta {
+    font-size: 12px;
+    gap: 8px;
+  }
+}

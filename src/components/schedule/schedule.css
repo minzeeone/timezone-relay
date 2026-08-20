@@ -1105,3 +1105,70 @@
     flex: 0 0 auto;
   }
 }
+
+/* Schedule desktop containment fix */
+@media (min-width: 981px) and (max-width: 1450px) {
+  .team-schedule {
+    --schedule-right-gutter: clamp(220px, 22vw, 320px);
+  }
+}
+/* Text-fit pass for schedule sidebar cards at notebook widths. */
+@media (min-width: 901px) and (max-width: 1440px) {
+  .schedule-filter-list {
+    gap: 8px;
+  }
+
+  .schedule-filter-list button {
+    font-size: clamp(15px, 1.18vw, 16px);
+    line-height: 1.2;
+  }
+
+  .schedule-card header strong {
+    font-size: clamp(19px, 1.55vw, 22px);
+  }
+}
+/* Let the schedule timeline reach the right edge of the content frame. */
+@media (min-width: 981px) {
+  .team-schedule {
+    --schedule-right-gutter: 0px;
+  }
+
+  .schedule-main {
+    padding-right: 0;
+  }
+}
+
+@media (min-width: 981px) and (max-width: 1120px) {
+  .team-schedule {
+    --schedule-right-gutter: 170px;
+  }
+}
+
+@media (min-width: 1121px) and (max-width: 1320px) {
+  .team-schedule {
+    --schedule-right-gutter: 145px;
+  }
+}
+
+@media (min-width: 1321px) and (max-width: 1400px) {
+  .team-schedule {
+    --schedule-right-gutter: 230px;
+  }
+}
+
+@media (min-width: 1401px) and (max-width: 1450px) {
+  .team-schedule {
+    --schedule-right-gutter: 95px;
+  }
+}
+@media (min-width: 1451px) and (max-width: 1600px) {
+  .team-schedule {
+    --schedule-right-gutter: 48px;
+  }
+}
+
+@media (min-width: 3440px) {
+  .team-schedule {
+    --schedule-right-gutter: 4px;
+  }
+}
