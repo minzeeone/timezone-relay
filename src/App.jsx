@@ -428,20 +428,44 @@ const settingsPanelData = {
 
 function SettingsPanel() {
   const [activeSettingsTab, setActiveSettingsTab] = useState('personal');
+  const settingsTabsRef = useRef(null);
+  const [settingsIndicator, setSettingsIndicator] = useState({ left: 0, width: 0, ready: false });
   const activeSettings = settingsPanelData[activeSettingsTab] ?? settingsPanelData.personal;
   const profileTiming = presenceOf('KR');
   const settingRows = activeSettings.rows;
   const privacyRows = activeSettings.details;
   const footerRow = activeSettings.footer;
 
+  useEffect(() => {
+    const tabs = settingsTabsRef.current;
+    if (!tabs) return undefined;
+
+    const updateIndicator = () => {
+      const activeTab = tabs.querySelector(`[data-settings-tab="${activeSettingsTab}"]`);
+      if (!activeTab) return;
+      setSettingsIndicator({ left: activeTab.offsetLeft, width: activeTab.offsetWidth, ready: true });
+    };
+
+    updateIndicator();
+    const observer = new ResizeObserver(updateIndicator);
+    observer.observe(tabs);
+    return () => observer.disconnect();
+  }, [activeSettingsTab]);
+
   return (
     <main className="settings-page" aria-label="설정">
-      <nav className="settings-tabs" aria-label="설정 분류">
+      <nav className="settings-tabs" ref={settingsTabsRef} aria-label="설정 분류">
+        <span
+          className={`settings-tab-indicator${settingsIndicator.ready ? ' is-ready' : ''}`}
+          style={{ width: settingsIndicator.width, transform: `translateX(${settingsIndicator.left}px)` }}
+          aria-hidden="true"
+        />
         {settingsTabs.map((tab) => (
           <button
             className={tab.id === activeSettingsTab ? 'active' : ''}
             type="button"
             key={tab.id}
+            data-settings-tab={tab.id}
             onClick={() => setActiveSettingsTab(tab.id)}
             aria-pressed={tab.id === activeSettingsTab}
           >
@@ -451,7 +475,7 @@ function SettingsPanel() {
         ))}
       </nav>
 
-      <section className="settings-copy" aria-label="현재 설정 섹션">
+      <section className="settings-copy" key={`copy-${activeSettingsTab}`} aria-label="현재 설정 섹션">
         <i className={'bi ' + activeSettings.icon} />
         <div>
           <strong>{activeSettings.title}</strong>
@@ -459,7 +483,7 @@ function SettingsPanel() {
         </div>
       </section>
 
-      <section className="settings-preview" aria-label={activeSettingsTab === 'personal' ? '프로필 미리보기' : activeSettings.title + ' 미리보기'}>
+      <section className="settings-preview" key={`preview-${activeSettingsTab}`} aria-label={activeSettingsTab === 'personal' ? '프로필 미리보기' : activeSettings.title + ' 미리보기'}>
         {activeSettingsTab === 'personal' ? (
           <>
             <h3>프로필 미리보기</h3>
@@ -515,7 +539,7 @@ function SettingsPanel() {
 
       <div className="settings-link-line" aria-hidden="true"><span /></div>
 
-      <section className="settings-panel-list" aria-label={activeSettings.title + ' 설정 목록'}>
+      <section className="settings-panel-list" key={`panel-${activeSettingsTab}`} aria-label={activeSettings.title + ' 설정 목록'}>
         <article className="settings-card account-info">
           {settingRows.map((row) => (
             <div className="settings-row" key={row.label}>

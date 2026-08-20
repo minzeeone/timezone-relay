@@ -29,8 +29,12 @@
 
 .apex-window.view-dashboard .notification-button {
   display: grid;
+  flex: 0 0 42px;
   width: 42px;
   height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  aspect-ratio: 1;
   border-color: rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.08);
   animation: dashboardScalePop 360ms 260ms var(--ease-out) both;
@@ -664,4 +668,250 @@
   border-color: transparent;
   background: rgba(255, 255, 255, 0.055);
   box-shadow: none;
+}
+
+/* When the dashboard no longer has room for the absolute desktop composition,
+   turn the lower content into a scrollable accordion instead of letting it overlap. */
+.handoff-dashboard.is-condensed {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: auto minmax(32px, 1fr) auto;
+  align-content: start;
+  height: 100%;
+  gap: 18px;
+  padding: 24px 24px 120px 4px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 119, 69, 0.45) transparent;
+}
+
+.handoff-dashboard.is-condensed .wire-hero,
+.handoff-dashboard.is-condensed .wire-stat-row,
+.handoff-dashboard.is-condensed .wire-attention,
+.handoff-dashboard.is-condensed .wire-handoff,
+.handoff-dashboard.is-condensed .wire-request,
+.handoff-dashboard.is-condensed .wire-team {
+  position: relative;
+  inset: auto;
+  width: auto;
+  transform: none;
+}
+
+.handoff-dashboard.is-condensed .wire-hero {
+  grid-column: 1 / 3;
+  align-self: center;
+  padding: 18px 0 28px;
+}
+
+.handoff-dashboard.is-condensed .wire-stat-row {
+  grid-column: 3 / 5;
+  grid-template-columns: repeat(2, minmax(84px, 1fr));
+  align-self: center;
+  justify-self: stretch;
+  gap: 24px 18px;
+}
+
+.handoff-dashboard.is-condensed .wire-attention,
+.handoff-dashboard.is-condensed .wire-handoff,
+.handoff-dashboard.is-condensed .wire-request,
+.handoff-dashboard.is-condensed .wire-team {
+  grid-row: 3;
+  align-self: end;
+  min-width: 0;
+  margin-top: 0;
+  scroll-margin-top: 20px;
+}
+
+.handoff-dashboard.is-condensed .is-expanded {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.handoff-dashboard.is-condensed:has(.is-expanded) .is-collapsed {
+  display: none;
+}
+
+@media (min-width: 801px) {
+  .handoff-dashboard.is-condensed .is-collapsed {
+    transform: translateY(50px);
+  }
+}
+
+.handoff-dashboard.is-condensed .wire-attention {
+  order: 3;
+}
+
+.handoff-dashboard.is-condensed .wire-handoff {
+  order: 4;
+}
+
+.handoff-dashboard.is-condensed .wire-request {
+  order: 5;
+}
+
+.handoff-dashboard.is-condensed .wire-team {
+  order: 6;
+}
+
+.handoff-dashboard.is-condensed .wire-hero {
+  order: 1;
+}
+
+.handoff-dashboard.is-condensed .wire-stat-row {
+  order: 2;
+}
+
+.handoff-dashboard.is-condensed .wire-attention header,
+.handoff-dashboard.is-condensed .wire-handoff header,
+.handoff-dashboard.is-condensed .wire-request header,
+.handoff-dashboard.is-condensed .wire-team header {
+  min-height: 72px;
+  margin-bottom: 0;
+  padding: 0 20px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.015)),
+    rgba(24, 16, 14, 0.72);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  transition: transform 180ms var(--ease-snap), border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.handoff-dashboard.is-condensed .is-collapsed header:hover {
+  border-color: rgba(255, 119, 69, 0.34);
+  background:
+    linear-gradient(135deg, rgba(255, 119, 69, 0.11), rgba(255, 255, 255, 0.02)),
+    rgba(30, 18, 15, 0.78);
+  box-shadow: 0 16px 34px rgba(255, 119, 69, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.handoff-dashboard.is-condensed .is-collapsed header {
+  position: relative;
+  display: flex;
+  min-height: clamp(104px, 8vw, 124px);
+  align-items: center;
+  padding: clamp(18px, 1.7vw, 24px);
+}
+
+.handoff-dashboard.is-condensed .is-collapsed header h3 {
+  align-self: center;
+  padding-right: 34px;
+  white-space: normal;
+}
+
+.handoff-dashboard.is-condensed .is-collapsed header button {
+  display: none;
+}
+
+.wire-widget-count {
+  display: none;
+}
+
+.handoff-dashboard.is-condensed .is-collapsed .wire-widget-count {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 50%;
+  color: #17110f;
+  background: #ff7745;
+  box-shadow: 0 6px 16px rgba(255, 119, 69, 0.28);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1;
+}
+
+.handoff-dashboard.is-condensed .is-expanded header {
+  margin-bottom: 12px;
+  border-color: rgba(255, 119, 69, 0.35);
+  background:
+    linear-gradient(135deg, rgba(255, 119, 69, 0.13), transparent 62%),
+    rgba(48, 28, 22, 0.78);
+}
+
+.handoff-dashboard.is-condensed .is-expanded .wire-section-card,
+.handoff-dashboard.is-condensed .is-expanded .wire-handoff-list,
+.handoff-dashboard.is-condensed .is-expanded .wire-team-card {
+  gap: 10px;
+}
+
+.handoff-dashboard.is-condensed .is-expanded .wire-task-row + .wire-task-row,
+.handoff-dashboard.is-condensed .is-expanded .wire-handoff-row + .wire-handoff-row {
+  border-top: 0;
+}
+
+.handoff-dashboard.is-condensed .is-collapsed .wire-section-card,
+.handoff-dashboard.is-condensed .is-collapsed .wire-team-card {
+  display: none;
+}
+
+.handoff-dashboard.is-condensed .is-collapsed header button i {
+  transform: rotate(90deg);
+}
+
+.handoff-dashboard.is-condensed .is-collapsed header button {
+  width: 34px;
+  height: 34px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.handoff-dashboard.is-condensed .is-collapsed h3 {
+  overflow: hidden;
+  font-size: clamp(18px, 1.45vw, 23px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.handoff-dashboard.is-condensed header button i {
+  transition: transform 200ms var(--ease-snap);
+}
+
+@media (max-width: 800px) {
+  .handoff-dashboard.is-condensed {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto minmax(24px, 1fr) auto auto;
+    gap: 20px;
+    padding: 12px 4px 176px;
+  }
+
+  .handoff-dashboard.is-condensed .wire-hero,
+  .handoff-dashboard.is-condensed .wire-stat-row {
+    grid-column: 1 / -1;
+  }
+
+  .handoff-dashboard.is-condensed .wire-stat-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .handoff-dashboard.is-condensed .wire-attention,
+  .handoff-dashboard.is-condensed .wire-handoff,
+  .handoff-dashboard.is-condensed .wire-request,
+  .handoff-dashboard.is-condensed .wire-team {
+    grid-row: 4;
+    margin-top: 14px;
+  }
+
+  .handoff-dashboard.is-condensed .wire-request,
+  .handoff-dashboard.is-condensed .wire-team {
+    grid-row: 5;
+  }
+
+  .handoff-dashboard.is-condensed .is-expanded {
+    grid-row: 4;
+  }
+
+  .handoff-dashboard.is-condensed .is-expanded {
+    grid-column: 1 / -1;
+  }
 }
